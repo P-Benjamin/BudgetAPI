@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7f7;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select, button {
+            margin-top: 5px;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        pre, table {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+
+        #login-section, #signup-section, #app-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Budget Manager</h1>
+
+    <div class="section" id="signup-section">
+        <h2>Inscription</h2>
+        <label>Nom d'utilisateur :</label>
+        <input type="text" id="signup-username">
+        <label>Mot de passe :</label>
+        <input type="password" id="signup-password">
+        <label>Email :</label>
+        <input type="email" id="signup-email">
+        <label>Nom :</label>
+        <input type="text" id="signup-surname">
+        <label>Prénom :</label>
+        <input type="text" id="signup-givenname">
+        <label>Rôle :</label>
+        <input type="text" id="signup-role" placeholder="Ex: Administrator">
+        <button onclick="signup()">S'inscrire</button>
+        <p>Déjà inscrit ? <a href="#" onclick="show('login-section')">Se connecter</a></p>
+        <pre id="signup-message"></pre>
+    </div>
+
+    <script>
+        const LOGIN_API = "https://localhost:7058/api/login";
+        const SIGNUP_API = "https://localhost:7058/api/users"; // à créer côté backend
+
+        function show(sectionId) {
+            document.getElementById("login-section").style.display = "none";
+            document.getElementById("signup-section").style.display = "none";
+            document.getElementById("app-section").style.display = "none";
+            document.getElementById(sectionId).style.display = "block";
+        }
+
+        function login() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+
+            fetch(LOGIN_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userName: username, password })
+            })
+            .then(async res => {
+                if (!res.ok) throw new Error(await res.text());
+                return res.text();
+            })
+            .then(token => {
+                localStorage.setItem("jwt", token);
+                document.getElementById("jwt-token").textContent = token;
+                show("app-section");
+            })
+            .catch(err => {
+                document.getElementById("login-message").textContent = "Erreur: " + err.message;
+            });
+        }
+
+        function signup() {
+            const user = {
+                username: document.getElementById("signup-username").value,
+                password: document.getElementById("signup-password").value,
+                emailAddress: document.getElementById("signup-email").value,
+                surname: document.getElementById("signup-surname").value,
+                givenName: document.getElementById("signup-givenname").value,
+                role: document.getElementById("signup-role").value
+            };
+
+            fetch(SIGNUP_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(user)
+            })
+            .then(async res => {
+                if (!res.ok) throw new Error(await res.text());
+                document.getElementById("signup-message").textContent = "Inscription réussie. Connectez-vous !";
+            })
+            .catch(err => {
+                document.getElementById("signup-message").textContent = "Erreur: " + err.message;
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem("jwt");
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+            document.getElementById("jwt-token").textContent = "";
+            document.getElementById("login-message").textContent = "";
+            show("login-section");
+        }
+
+        // auto-login if token exists
+        if (localStorage.getItem("jwt")) {
+            document.getElementById("jwt-token").textContent = localStorage.getItem("jwt");
+            show("app-section");
+        } else {
+            show("login-section");
+        }
+    </script>
+</body>
+</html>
