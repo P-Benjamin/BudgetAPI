@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <title>Budget Manager</title>
     <style>
@@ -190,15 +191,15 @@
             data.forEach(i => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                                <td>${i.id}</td>
-                                <td>${i.source}</td>
-                                <td>${i.amount}</td>
-                                <td>${i.dateReceived.split("T")[0]}</td>
-                                <td>
-                                    <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
-                                    <button onclick="deleteIncome(${i.id})">Supprimer</button>
-                                </td>
-                            `;
+                                        <td>${i.id}</td>
+                                        <td>${i.source}</td>
+                                        <td>${i.amount}</td>
+                                        <td>${i.dateReceived.split("T")[0]}</td>
+                                        <td>
+                                            <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                            <button onclick="deleteIncome(${i.id})">Supprimer</button>
+                                        </td>
+                                    `;
                 tbody.appendChild(tr);
             });
         }
@@ -248,15 +249,15 @@
             data.forEach(i => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${i.id}</td>
-                    <td>${i.source}</td>
-                    <td>${i.amount}</td>
-                    <td>${i.dateReceived.split("T")[0]}</td>
-                    <td>
-                        <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
-                        <button onclick="deleteOutcome(${i.id})">Supprimer</button>
-                    </td>
-                `;
+                            <td>${i.id}</td>
+                            <td>${i.source}</td>
+                            <td>${i.amount}</td>
+                            <td>${i.dateReceived.split("T")[0]}</td>
+                            <td>
+                                <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                <button onclick="deleteOutcome(${i.id})">Supprimer</button>
+                            </td>
+                        `;
                 tbody.appendChild(tr);
             });
         }
@@ -298,5 +299,70 @@
             fetchOutcomes();
         }
     </script>
+
+    <div class="section">
+        <h2>Graphique Incomes vs Outcomes par mois (2025)</h2>
+        <canvas id="budgetChart" width="600" height="300"></canvas>
+        <button onclick="loadChartData()">Charger le graphique</button>
+    </div>
+
+    <script>
+        let chart;
+
+        async function loadChartData() {
+            const year = 2025;
+            const labels = Array.from({ length: 12 }, (_, i) => `${i + 1}`); // Mois 1 à 12
+
+            const incomeData = await Promise.all(labels.map(async month => {
+                const res = await fetch(`${API_BASE}/incomes/total/month/${year}/${month}`);
+                return parseFloat(await res.text());
+            }));
+
+            const outcomeData = await Promise.all(labels.map(async month => {
+                const res = await fetch(`${API_BASE}/outcomes/total/month/${year}/${month}`);
+                return parseFloat(await res.text());
+            }));
+
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+
+            if (chart) chart.destroy(); // Pour éviter les duplications
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.map(m => `M${m}`),
+                    datasets: [
+                        {
+                            label: 'Incomes',
+                            data: incomeData,
+                            borderColor: 'green',
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Outcomes',
+                            data: outcomeData,
+                            borderColor: 'red',
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Incomes vs Outcomes - Année 2025'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
 </body>
 </html>
