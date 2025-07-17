@@ -103,5 +103,14 @@ namespace BudgetAPI.Controllers
         {
             return _context.Income.Any(e => e.Id == id);
         }
+
+        // GET: api/Incomes
+        [HttpGet("total")]
+        public async Task<ActionResult<string>> GetTotalIncome()
+        {
+            var total = await _context.Income.SumAsync(i => i.Amount);
+            return Ok(total);
+            
+        }
     }
 }
