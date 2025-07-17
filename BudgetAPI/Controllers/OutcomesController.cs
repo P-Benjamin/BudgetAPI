@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using BudgetAPI.Models;
+using BudgetAPI.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BudgetAPI.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BudgetAPI.Controllers
 {
@@ -103,5 +104,52 @@ namespace BudgetAPI.Controllers
         {
             return _context.Outcome.Any(e => e.Id == id);
         }
+
+        // GET: api/Outcomes/total
+        [HttpGet("total")]
+        public async Task<ActionResult<decimal>> GetTotalAmount()
+        {
+            var total = await _context.Outcome.SumAsync(o => o.Amount);
+            return Ok(total);
+        }
+
+        // GET: api/Outcomes/total/month/{year}/{month}
+        [HttpGet("total/month/{year:int}/{month:int}")]
+        public async Task<ActionResult<decimal>> GetTotalByMonth(int year, int month)
+        {
+            var total = await _context.Outcome
+                .Where(o => o.DateReceived.Year == year && o.DateReceived.Month == month)
+                .SumAsync(o => o.Amount);
+
+            return Ok(total);
+        }
+
+        // GET: api/Outcomes/total/year/{year}
+        [HttpGet("total/year/{year:int}")]
+        public async Task<ActionResult<decimal>> GetTotalByYear(int year)
+        {
+            var total = await _context.Outcome
+                .Where(o => o.DateReceived.Year == year)
+                .SumAsync(o => o.Amount);
+
+            return Ok(total);
+        }
+
+        // POST: api/Outcomes/total/range
+        [HttpPost("total/range")]
+        public async Task<ActionResult<decimal>> GetTotalByDateRange([FromBody] DateRangeDto range)
+        {
+            if (range.Start > range.End)
+            {
+                return BadRequest("La date de début doit être antérieure à la date de fin.");
+            }
+
+            var total = await _context.Outcome
+                .Where(o => o.DateReceived >= range.Start && o.DateReceived <= range.End)
+                .SumAsync(o => o.Amount);
+
+            return Ok(total);
+        }
+
     }
 }
