@@ -12,11 +12,15 @@ namespace BudgetAPI.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
+            
         private IConfiguration _configuration;
+        private readonly AccountContext _context;
 
-        public LoginController(IConfiguration configuration)
+
+        public LoginController(IConfiguration configuration, AccountContext context)
         {
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost]
@@ -63,21 +67,11 @@ namespace BudgetAPI.Controllers
 
         private bool Authenticate(UserLogin userLogin)
         {
-            var allUsers = UserConstants.Users;
+            var user = _context.User.FirstOrDefault(u =>
+                u.Username.ToLower() == userLogin.UserName.ToLower()
+                && u.Password == userLogin.Password);
 
-            var userExist = from user in allUsers
-                            where user.Username.ToLower() == userLogin.UserName.ToLower()
-                                && user.Password == userLogin.Password
-                            select user;
-
-            if (userExist.Any())
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return user != null;
         }
     }
 }
