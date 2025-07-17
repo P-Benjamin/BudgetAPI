@@ -191,15 +191,15 @@
             data.forEach(i => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                                        <td>${i.id}</td>
-                                        <td>${i.source}</td>
-                                        <td>${i.amount}</td>
-                                        <td>${i.dateReceived.split("T")[0]}</td>
-                                        <td>
-                                            <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
-                                            <button onclick="deleteIncome(${i.id})">Supprimer</button>
-                                        </td>
-                                    `;
+                                            <td>${i.id}</td>
+                                            <td>${i.source}</td>
+                                            <td>${i.amount}</td>
+                                            <td>${i.dateReceived.split("T")[0]}</td>
+                                            <td>
+                                                <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                                <button onclick="deleteIncome(${i.id})">Supprimer</button>
+                                            </td>
+                                        `;
                 tbody.appendChild(tr);
             });
         }
@@ -249,15 +249,15 @@
             data.forEach(i => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                            <td>${i.id}</td>
-                            <td>${i.source}</td>
-                            <td>${i.amount}</td>
-                            <td>${i.dateReceived.split("T")[0]}</td>
-                            <td>
-                                <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
-                                <button onclick="deleteOutcome(${i.id})">Supprimer</button>
-                            </td>
-                        `;
+                                <td>${i.id}</td>
+                                <td>${i.source}</td>
+                                <td>${i.amount}</td>
+                                <td>${i.dateReceived.split("T")[0]}</td>
+                                <td>
+                                    <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                    <button onclick="deleteOutcome(${i.id})">Supprimer</button>
+                                </td>
+                            `;
                 tbody.appendChild(tr);
             });
         }
@@ -298,6 +298,7 @@
             }
             fetchOutcomes();
         }
+
     </script>
 
     <div class="section">
