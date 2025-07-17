@@ -1,5 +1,6 @@
 ﻿using BudgetAPI.Models;
 using BudgetAPI.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,8 @@ namespace BudgetAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class OutcomesController : ControllerBase
     {
         private readonly AccountContext _context;

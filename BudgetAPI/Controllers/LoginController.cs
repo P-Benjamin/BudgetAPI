@@ -1,4 +1,5 @@
 ﻿using BudgetAPI.Models;
+using BudgetAPI.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
