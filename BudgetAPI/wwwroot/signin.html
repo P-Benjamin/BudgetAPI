@@ -64,6 +64,17 @@
 <body>
     <h1>Budget Manager</h1>
 
+    <div class="section" id="login-section">
+        <h2>Connexion</h2>
+        <label>Nom d'utilisateur :</label>
+        <input type="text" id="login-username">
+        <label>Mot de passe :</label>
+        <input type="password" id="login-password">
+        <button onclick="login()">Se connecter</button>
+        <p>Pas encore de compte ? <a href="#" onclick="show('signup-section')">S'inscrire</a></p>
+        <pre id="login-message"></pre>
+    </div>
+
     <div class="section" id="signup-section">
         <h2>Inscription</h2>
         <label>Nom d'utilisateur :</label>
@@ -77,21 +88,33 @@
         <label>Prénom :</label>
         <input type="text" id="signup-givenname">
         <label>Rôle :</label>
-        <input type="text" id="signup-role" placeholder="Ex: Administrator">
-        <button onclick="signup()">S'inscrire</button>
+        <select id="signup-role">
+            <option value="User">Utilisateur</option>
+            <option value="Administrator">Administrateur</option>
+        </select>
+        <button onclick="signup()">Créer mon compte</button>
         <p>Déjà inscrit ? <a href="#" onclick="show('login-section')">Se connecter</a></p>
         <pre id="signup-message"></pre>
     </div>
 
+    <div class="section" id="app-section">
+        <h2>Bienvenue</h2>
+        <p>Jeton JWT stocké !</p>
+        <button onclick="logout()">Se déconnecter</button>
+        <pre id="jwt-token"></pre>
+    </div>
+
     <script>
         const LOGIN_API = "https://localhost:7058/api/login";
-        const SIGNUP_API = "https://localhost:7058/api/users"; // à créer côté backend
+        const SIGNUP_API = "https://localhost:7058/api/users";
 
         function show(sectionId) {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("signup-section").style.display = "none";
-            document.getElementById("app-section").style.display = "none";
-            document.getElementById(sectionId).style.display = "block";
+            ["login-section", "signup-section", "app-section"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+            const target = document.getElementById(sectionId);
+            if (target) target.style.display = "block";
         }
 
         function login() {
@@ -103,18 +126,18 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userName: username, password })
             })
-            .then(async res => {
-                if (!res.ok) throw new Error(await res.text());
-                return res.text();
-            })
-            .then(token => {
-                localStorage.setItem("jwt", token);
-                document.getElementById("jwt-token").textContent = token;
-                show("app-section");
-            })
-            .catch(err => {
-                document.getElementById("login-message").textContent = "Erreur: " + err.message;
-            });
+                .then(async res => {
+                    if (!res.ok) throw new Error(await res.text());
+                    return res.text();
+                })
+                .then(token => {
+                    localStorage.setItem("jwt", token);
+                    document.getElementById("jwt-token").textContent = token;
+                    window.location.href = "index.html";
+                })
+                .catch(err => {
+                    document.getElementById("login-message").textContent = "Erreur: " + err.message;
+                });
         }
 
         function signup() {
@@ -132,13 +155,14 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(user)
             })
-            .then(async res => {
-                if (!res.ok) throw new Error(await res.text());
-                document.getElementById("signup-message").textContent = "Inscription réussie. Connectez-vous !";
-            })
-            .catch(err => {
-                document.getElementById("signup-message").textContent = "Erreur: " + err.message;
-            });
+                .then(async res => {
+                    if (!res.ok) throw new Error(await res.text());
+                    document.getElementById("signup-message").textContent = "Inscription réussie. Connexion en cours...";
+                    window.location.href = "index.html";
+                })
+                .catch(err => {
+                    document.getElementById("signup-message").textContent = "Erreur: " + err.message;
+                });
         }
 
         function logout() {
@@ -150,7 +174,6 @@
             show("login-section");
         }
 
-        // auto-login if token exists
         if (localStorage.getItem("jwt")) {
             document.getElementById("jwt-token").textContent = localStorage.getItem("jwt");
             show("app-section");
