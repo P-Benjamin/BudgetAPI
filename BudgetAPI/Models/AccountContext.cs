@@ -10,5 +10,6 @@ namespace BudgetAPI.Models
             }
 
             public DbSet<Income> Income { get; set; }
+            public DbSet<Outcome> Outcome { get; set; }
     }
 }
