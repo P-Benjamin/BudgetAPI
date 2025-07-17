@@ -1,10 +1,302 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <title>Budget Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7f7;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select, button {
+            margin-top: 5px;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        pre, table {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
+    <h1>Budget Manager (Incomes / Outcomes)</h1>
 
+    <div class="section">
+        <h2>Total global</h2>
+        <button onclick="getTotal('incomes')">Total Incomes</button>
+        <button onclick="getTotal('outcomes')">Total Outcomes</button>
+        <pre id="total-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Total par mois</h2>
+        <label>Année :</label>
+        <input type="number" id="year-month" value="2025">
+        <label>Mois :</label>
+        <input type="number" id="month" value="7">
+        <button onclick="getTotalByMonth('incomes')">Incomes</button>
+        <button onclick="getTotalByMonth('outcomes')">Outcomes</button>
+        <pre id="month-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Total par année</h2>
+        <label>Année :</label>
+        <input type="number" id="year-total" value="2025">
+        <button onclick="getTotalByYear('incomes')">Incomes</button>
+        <button onclick="getTotalByYear('outcomes')">Outcomes</button>
+        <pre id="year-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Total sur une période</h2>
+        <label>De :</label>
+        <input type="date" id="start-date">
+        <label>À :</label>
+        <input type="date" id="end-date">
+        <button onclick="getTotalByRange('incomes')">Incomes</button>
+        <button onclick="getTotalByRange('outcomes')">Outcomes</button>
+        <pre id="range-result"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Liste des Incomes</h2>
+        <button onclick="fetchIncomes()">Charger les incomes</button>
+        <table id="income-table">
+            <thead>
+                <tr><th>ID</th><th>Source</th><th>Amount</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Ajouter / Modifier un Income</h2>
+        <label>ID (laisser vide pour ajout) :</label>
+        <input type="number" id="income-id">
+        <label>Source :</label>
+        <input type="text" id="income-source">
+        <label>Amount :</label>
+        <input type="number" id="income-amount" step="0.01">
+        <label>Date :</label>
+        <input type="date" id="income-date">
+        <button onclick="saveIncome()">Enregistrer</button>
+    </div>
+
+    <div class="section">
+        <h2>Liste des Outcomes</h2>
+        <button onclick="fetchOutcomes()">Charger les outcomes</button>
+        <table id="outcome-table">
+            <thead>
+                <tr><th>ID</th><th>Source</th><th>Amount</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Ajouter / Modifier un Outcome</h2>
+        <label>ID (laisser vide pour ajout) :</label>
+        <input type="number" id="outcome-id">
+        <label>Source :</label>
+        <input type="text" id="outcome-source">
+        <label>Amount :</label>
+        <input type="number" id="outcome-amount" step="0.01">
+        <label>Date :</label>
+        <input type="date" id="outcome-date">
+        <button onclick="saveOutcome()">Enregistrer</button>
+    </div>
+
+    <script>
+        const API_BASE = "https://localhost:7058/api";
+
+        async function getTotal(type) {
+            const res = await fetch(`${API_BASE}/${type}/total`);
+            const data = await res.text();
+            document.getElementById("total-result").textContent = `${type}: ${data}`;
+        }
+
+        async function getTotalByMonth(type) {
+            const year = document.getElementById("year-month").value;
+            const month = document.getElementById("month").value;
+            const res = await fetch(`${API_BASE}/${type}/total/month/${year}/${month}`);
+            const data = await res.text();
+            document.getElementById("month-result").textContent = `${type} (${month}/${year}): ${data}`;
+        }
+
+        async function getTotalByYear(type) {
+            const year = document.getElementById("year-total").value;
+            const res = await fetch(`${API_BASE}/${type}/total/year/${year}`);
+            const data = await res.text();
+            document.getElementById("year-result").textContent = `${type} (${year}): ${data}`;
+        }
+
+        async function getTotalByRange(type) {
+            const start = document.getElementById("start-date").value;
+            const end = document.getElementById("end-date").value;
+            const res = await fetch(`${API_BASE}/${type}/total/range`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ start, end })
+            });
+            const data = await res.text();
+            document.getElementById("range-result").textContent = `${type} (${start} → ${end}): ${data}`;
+        }
+
+        async function fetchIncomes() {
+            const res = await fetch(`${API_BASE}/incomes`);
+            const data = await res.json();
+            const tbody = document.querySelector("#income-table tbody");
+            tbody.innerHTML = "";
+            data.forEach(i => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                                <td>${i.id}</td>
+                                <td>${i.source}</td>
+                                <td>${i.amount}</td>
+                                <td>${i.dateReceived.split("T")[0]}</td>
+                                <td>
+                                    <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                    <button onclick="deleteIncome(${i.id})">Supprimer</button>
+                                </td>
+                            `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editIncome(id, source, amount, date) {
+            document.getElementById("income-id").value = id;
+            document.getElementById("income-source").value = source;
+            document.getElementById("income-amount").value = amount;
+            document.getElementById("income-date").value = date;
+        }
+
+        async function deleteIncome(id) {
+            if (!confirm("Supprimer cet income ?")) return;
+            await fetch(`${API_BASE}/incomes/${id}`, { method: "DELETE" });
+            fetchIncomes();
+        }
+
+        async function saveIncome() {
+            const id = document.getElementById("income-id").value;
+            const source = document.getElementById("income-source").value;
+            const amount = parseFloat(document.getElementById("income-amount").value);
+            const dateReceived = document.getElementById("income-date").value;
+
+            const income = { source, amount, dateReceived };
+
+            if (!id) {
+                await fetch(`${API_BASE}/incomes`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(income)
+                });
+            } else {
+                await fetch(`${API_BASE}/incomes/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+                });
+            }
+            fetchIncomes();
+        }
+
+        async function fetchOutcomes() {
+            const res = await fetch(`${API_BASE}/outcomes`);
+            const data = await res.json();
+            const tbody = document.querySelector("#outcome-table tbody");
+            tbody.innerHTML = "";
+            data.forEach(i => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${i.id}</td>
+                    <td>${i.source}</td>
+                    <td>${i.amount}</td>
+                    <td>${i.dateReceived.split("T")[0]}</td>
+                    <td>
+                        <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                        <button onclick="deleteOutcome(${i.id})">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editOutcome(id, source, amount, date) {
+            document.getElementById("outcome-id").value = id;
+            document.getElementById("outcome-source").value = source;
+            document.getElementById("outcome-amount").value = amount;
+            document.getElementById("outcome-date").value = date;
+        }
+
+        async function deleteOutcome(id) {
+            if (!confirm("Supprimer cet outcome ?")) return;
+            await fetch(`${API_BASE}/outcomes/${id}`, { method: "DELETE" });
+            fetchOutcomes();
+        }
+
+        async function saveOutcome() {
+            const id = document.getElementById("outcome-id").value;
+            const source = document.getElementById("outcome-source").value;
+            const amount = parseFloat(document.getElementById("outcome-amount").value);
+            const dateReceived = document.getElementById("outcome-date").value;
+
+            const outcome = { source, amount, dateReceived };
+
+            if (!id) {
+                await fetch(`${API_BASE}/outcomes`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(outcome)
+                });
+            } else {
+                await fetch(`${API_BASE}/outcomes/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+                });
+            }
+            fetchOutcomes();
+        }
+    </script>
 </body>
 </html>
