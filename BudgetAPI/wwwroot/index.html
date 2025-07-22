@@ -149,9 +149,16 @@
 
     <script>
         const API_BASE = "https://localhost:7058/api";
+        const token = localStorage.getItem("jwt");
 
         async function getTotal(type) {
-            const res = await fetch(`${API_BASE}/${type}/total`);
+            const res = await fetch(`${API_BASE}/${type}/total`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             const data = await res.text();
             document.getElementById("total-result").textContent = `${type}: ${data}`;
         }
@@ -159,14 +166,26 @@
         async function getTotalByMonth(type) {
             const year = document.getElementById("year-month").value;
             const month = document.getElementById("month").value;
-            const res = await fetch(`${API_BASE}/${type}/total/month/${year}/${month}`);
+            const res = await fetch(`${API_BASE}/${type}/total/month/${year}/${month}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             const data = await res.text();
             document.getElementById("month-result").textContent = `${type} (${month}/${year}): ${data}`;
         }
 
         async function getTotalByYear(type) {
             const year = document.getElementById("year-total").value;
-            const res = await fetch(`${API_BASE}/${type}/total/year/${year}`);
+            const res = await fetch(`${API_BASE}/${type}/total/year/${year}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             const data = await res.text();
             document.getElementById("year-result").textContent = `${type} (${year}): ${data}`;
         }
@@ -176,7 +195,9 @@
             const end = document.getElementById("end-date").value;
             const res = await fetch(`${API_BASE}/${type}/total/range`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json", 'Authorization': `Bearer ${token}`,
+ },
                 body: JSON.stringify({ start, end })
             });
             const data = await res.text();
@@ -184,7 +205,13 @@
         }
 
         async function fetchIncomes() {
-            const res = await fetch(`${API_BASE}/incomes`);
+            const res = await fetch(`${API_BASE}/incomes`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            })
             const data = await res.json();
             const tbody = document.querySelector("#income-table tbody");
             tbody.innerHTML = "";
@@ -213,7 +240,12 @@
 
         async function deleteIncome(id) {
             if (!confirm("Supprimer cet income ?")) return;
-            await fetch(`${API_BASE}/incomes/${id}`, { method: "DELETE" });
+            await fetch(`${API_BASE}/incomes/${id}`, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                } });
             fetchIncomes();
         }
 
@@ -228,13 +260,17 @@
             if (!id) {
                 await fetch(`${API_BASE}/incomes`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify(income)
                 });
             } else {
                 await fetch(`${API_BASE}/incomes/${id}`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json", 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
                 });
             }
@@ -242,7 +278,13 @@
         }
 
         async function fetchOutcomes() {
-            const res = await fetch(`${API_BASE}/outcomes`);
+            const res = await fetch(`${API_BASE}/outcomes`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             const data = await res.json();
             const tbody = document.querySelector("#outcome-table tbody");
             tbody.innerHTML = "";
@@ -271,7 +313,13 @@
 
         async function deleteOutcome(id) {
             if (!confirm("Supprimer cet outcome ?")) return;
-            await fetch(`${API_BASE}/outcomes/${id}`, { method: "DELETE" });
+            await fetch(`${API_BASE}/outcomes/${id}`, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
             fetchOutcomes();
         }
 
@@ -286,13 +334,19 @@
             if (!id) {
                 await fetch(`${API_BASE}/outcomes`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`,
+                    },
                     body: JSON.stringify(outcome)
                 });
             } else {
                 await fetch(`${API_BASE}/outcomes/${id}`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`,
+    },
                     body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
                 });
             }
@@ -315,12 +369,24 @@
             const labels = Array.from({ length: 12 }, (_, i) => `${i + 1}`); // Mois 1 à 12
 
             const incomeData = await Promise.all(labels.map(async month => {
-                const res = await fetch(`${API_BASE}/incomes/total/month/${year}/${month}`);
+                const res = await fetch(`${API_BASE}/incomes/total/month/${year}/${month}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
                 return parseFloat(await res.text());
             }));
 
             const outcomeData = await Promise.all(labels.map(async month => {
-                const res = await fetch(`${API_BASE}/outcomes/total/month/${year}/${month}`);
+                const res = await fetch(`${API_BASE}/outcomes/total/month/${year}/${month}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
                 return parseFloat(await res.text());
             }));
 
