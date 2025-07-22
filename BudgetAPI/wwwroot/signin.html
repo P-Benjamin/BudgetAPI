@@ -102,6 +102,10 @@
                 .then(async res => {
                     if (!res.ok) throw new Error(await res.text());
                     document.getElementById("signup-message").textContent = "Inscription réussie. Connexion en cours...";
+
+                    document.getElementById("login-username").value = user.username;
+                    document.getElementById("login-password").value = user.password;
+
                     login();
                 })
                 .catch(err => {
