@@ -1,20 +1,14 @@
 ﻿using BudgetAPI.Models;
 using BudgetAPI.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BudgetAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class OutcomesController : ControllerBase
     {
         private readonly AccountContext _context;
@@ -24,14 +18,21 @@ namespace BudgetAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Outcomes
+        /// <summary>
+        /// Récupère tous les résultats (dépenses).
+        /// </summary>
+        /// <returns>Liste de toutes les dépenses</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Outcome>>> GetOutcome()
         {
             return await _context.Outcome.ToListAsync();
         }
 
-        // GET: api/Outcomes/5
+        /// <summary>
+        /// Récupère une dépense par son ID.
+        /// </summary>
+        /// <param name="id">Identifiant de la dépense</param>
+        /// <returns>Dépense correspondante</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Outcome>> GetOutcome(int id)
         {
@@ -45,8 +46,12 @@ namespace BudgetAPI.Controllers
             return outcome;
         }
 
-        // PUT: api/Outcomes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Modifie une dépense existante.
+        /// </summary>
+        /// <param name="id">ID de la dépense à modifier</param>
+        /// <param name="outcome">Nouvelle valeur de la dépense</param>
+        /// <returns>Code HTTP 204 si succès</returns>
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOutcome(int id, Outcome outcome)
         {
@@ -76,8 +81,11 @@ namespace BudgetAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Outcomes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        /// <summary>
+        /// Crée une nouvelle dépense.
+        /// </summary>
+        /// <param name="outcome">Objet dépense à créer</param>
+        /// <returns>La dépense créée avec son ID</returns>
         [HttpPost]
         public async Task<ActionResult<Outcome>> PostOutcome(Outcome outcome)
         {
@@ -87,7 +95,11 @@ namespace BudgetAPI.Controllers
             return CreatedAtAction("GetOutcome", new { id = outcome.Id }, outcome);
         }
 
-        // DELETE: api/Outcomes/5
+        /// <summary>
+        /// Supprime une dépense existante.
+        /// </summary>
+        /// <param name="id">ID de la dépense à supprimer</param>
+        /// <returns>Code HTTP 204 si succès</returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOutcome(int id)
         {
@@ -103,12 +115,10 @@ namespace BudgetAPI.Controllers
             return NoContent();
         }
 
-        private bool OutcomeExists(int id)
-        {
-            return _context.Outcome.Any(e => e.Id == id);
-        }
-
-        // GET: api/Outcomes/total
+        /// <summary>
+        /// Calcule le total de toutes les dépenses.
+        /// </summary>
+        /// <returns>Total des montants des dépenses</returns>
         [HttpGet("total")]
         public async Task<ActionResult<decimal>> GetTotalAmount()
         {
@@ -116,7 +126,12 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
-        // GET: api/Outcomes/total/month/{year}/{month}
+        /// <summary>
+        /// Calcule le total des dépenses pour un mois et une année donnés.
+        /// </summary>
+        /// <param name="year">Année</param>
+        /// <param name="month">Mois</param>
+        /// <returns>Total des dépenses pour ce mois</returns>
         [HttpGet("total/month/{year:int}/{month:int}")]
         public async Task<ActionResult<decimal>> GetTotalByMonth(int year, int month)
         {
@@ -127,7 +142,11 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
-        // GET: api/Outcomes/total/year/{year}
+        /// <summary>
+        /// Calcule le total des dépenses pour une année donnée.
+        /// </summary>
+        /// <param name="year">Année</param>
+        /// <returns>Total des dépenses pour cette année</returns>
         [HttpGet("total/year/{year:int}")]
         public async Task<ActionResult<decimal>> GetTotalByYear(int year)
         {
@@ -138,7 +157,11 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
-        // POST: api/Outcomes/total/range
+        /// <summary>
+        /// Calcule le total des dépenses entre deux dates.
+        /// </summary>
+        /// <param name="range">Plage de dates contenant la date de début et de fin</param>
+        /// <returns>Total des dépenses sur la période</returns>
         [HttpPost("total/range")]
         public async Task<ActionResult<decimal>> GetTotalByDateRange([FromBody] DateRangeDto range)
         {
@@ -154,5 +177,9 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
+        private bool OutcomeExists(int id)
+        {
+            return _context.Outcome.Any(e => e.Id == id);
+        }
     }
 }

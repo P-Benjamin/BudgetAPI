@@ -13,10 +13,8 @@ namespace BudgetAPI.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-            
         private IConfiguration _configuration;
         private readonly AccountContext _context;
-
 
         public LoginController(IConfiguration configuration, AccountContext context)
         {
@@ -24,6 +22,13 @@ namespace BudgetAPI.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Authentifie un utilisateur et génère un jeton JWT.
+        /// </summary>
+        /// <param name="userLogin">Nom d'utilisateur et mot de passe</param>
+        /// <returns>Jeton JWT si les identifiants sont valides, sinon 401</returns>
+        /// <response code="200">Connexion réussie, jeton JWT retourné</response>
+        /// <response code="401">Identifiants invalides</response>
         [HttpPost]
         public IActionResult Login(UserLogin userLogin)
         {
@@ -31,7 +36,6 @@ namespace BudgetAPI.Controllers
 
             if (isOk)
             {
-                //générer jeton JWT
                 string token = Generate(userLogin);
                 return Ok(token);
             }
@@ -41,6 +45,11 @@ namespace BudgetAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Génère un jeton JWT pour un utilisateur donné.
+        /// </summary>
+        /// <param name="userLogin">Données d'identification utilisateur</param>
+        /// <returns>Chaîne du token JWT</returns>
         private string Generate(UserLogin userLogin)
         {
             var secret = _configuration["Jwt:Key"];
@@ -48,29 +57,31 @@ namespace BudgetAPI.Controllers
             var security = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(security, SecurityAlgorithms.HmacSha256);
 
-            //Choisir les informations à mettre dans le token (claims)
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userLogin.UserName),
-                new Claim("Coucou", "value")
+                new Claim("Coucou", "value") // Peut être remplacé par un rôle ou autre
             };
 
-            //Générer le token 
             var token = new JwtSecurityToken(
-                      claims: claims,
-                      expires: DateTime.Now.AddMinutes(15),
-                      signingCredentials: credentials
-                );
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(15),
+                signingCredentials: credentials
+            );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return tokenString;
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /// <summary>
+        /// Vérifie les identifiants de connexion fournis.
+        /// </summary>
+        /// <param name="userLogin">Objet contenant les identifiants</param>
+        /// <returns>Vrai si les identifiants sont valides, sinon faux</returns>
         private bool Authenticate(UserLogin userLogin)
         {
             var user = _context.User.FirstOrDefault(u =>
                 u.Username.ToLower() == userLogin.UserName.ToLower()
-                && u.Password == userLogin.Password);
+                && u.Password == userLogin.Password); // ⚠️ À ne pas faire en production (mot de passe en clair)
 
             return user != null;
         }
