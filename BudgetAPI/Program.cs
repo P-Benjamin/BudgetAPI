@@ -78,6 +78,8 @@ builder.Services.AddDbContext<AccountContext>(opt => opt.UseInMemoryDatabase("M1
 
 var app = builder.Build();
 
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -98,4 +100,20 @@ app.UseStaticFiles();
 
 app.MapControllers();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AccountContext>();
+
+    if (!context.User.Any())
+    {
+        context.User.AddRange(
+        new User { Id = 1, Username = "admin", Password = "admin", EmailAddress = "admin@admin", Role = "Admin", Surname = "Admin", GivenName = "Admin" }
+
+        );
+        context.SaveChanges();
+    }
+}
+
 app.Run();
+
