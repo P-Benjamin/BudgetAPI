@@ -1,8 +1,15 @@
-﻿namespace BudgetAPI.Models.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BudgetAPI.Models.DTOs
 {
     public class UserLogin
     {
+        [Required(ErrorMessage = "Le nom d'utilisateur est obligatoire.")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Le nom d'utilisateur doit contenir entre 3 et 50 caractères.")]
         public string UserName { get; set; }
+
+        [Required(ErrorMessage = "Le mot de passe est obligatoire.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères.")]
         public string Password { get; set; }
     }
 }
