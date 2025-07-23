@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace BudgetAPI.Models
 {
@@ -20,6 +21,7 @@ namespace BudgetAPI.Models
         public DateTime DateReceived { get; set; }
 
         [JsonIgnore]
+        [ValidateNever]
         public Source Source { get; set; }
 
     }

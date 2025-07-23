@@ -1,6 +1,10 @@
 ﻿const API_BASE = "https://localhost:7058/api";
 const token = localStorage.getItem("jwt");
 
+window.addEventListener('DOMContentLoaded', () => {
+    loadSources(); 
+});
+
 async function getTotal(type) {
     const res = await fetch(`${API_BASE}/${type}/total`, {
         method: 'GET',
@@ -102,11 +106,13 @@ async function deleteIncome(id) {
 
 async function saveIncome() {
     const id = document.getElementById("income-id").value;
-    const source = document.getElementById("income-source").value;
+    const sourceId = parseInt(document.getElementById("income-source").value);
     const amount = parseFloat(document.getElementById("income-amount").value);
     const dateReceived = document.getElementById("income-date").value;
 
-    const income = { source, amount, dateReceived };
+    const income = { sourceId, amount, dateReceived };
+
+    console.log(income);
 
     if (!id) {
         await fetch(`${API_BASE}/incomes`, {
@@ -117,6 +123,7 @@ async function saveIncome() {
             },
             body: JSON.stringify(income)
         });
+
     } else {
         await fetch(`${API_BASE}/incomes/${id}`, {
             method: "PUT",
@@ -154,6 +161,33 @@ async function fetchOutcomes() {
                             `;
         tbody.appendChild(tr);
     });
+}
+
+async function loadSources() {
+    try {
+        const response = await fetch("/api/sources");
+        const sources = await response.json();
+        const select = document.getElementById("income-source");
+
+        select.innerHTML = "";
+
+        const placeholderOption = document.createElement("option");
+        placeholderOption.value = "";
+        placeholderOption.textContent = "-- Choisir une source --";
+        placeholderOption.disabled = true;
+        placeholderOption.selected = true;
+        select.appendChild(placeholderOption);
+
+        sources.forEach(source => {
+            const option = document.createElement("option");
+            option.value = source.id;
+            option.textContent = source.name;
+            select.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Erreur lors du chargement des sources :", err);
+    }
 }
 
 function editOutcome(id, source, amount, date) {
