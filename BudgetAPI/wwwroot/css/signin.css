@@ -28,6 +28,11 @@ input, select, button {
     max-width: 300px;
 }
 
+button a {
+    text-decoration: none;
+    color: black;
+}
+
 pre, table {
     background-color: #eee;
     padding: 10px;

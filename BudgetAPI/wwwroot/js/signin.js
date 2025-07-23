@@ -25,7 +25,6 @@ function login() {
         })
         .then(token => {
             localStorage.setItem("jwt", token);
-            document.getElementById("jwt-token").textContent = token;
             window.location.href = "index.html";
         })
         .catch(err => {
@@ -66,13 +65,11 @@ function logout() {
     localStorage.removeItem("jwt");
     document.getElementById("login-username").value = "";
     document.getElementById("login-password").value = "";
-    document.getElementById("jwt-token").textContent = "";
     document.getElementById("login-message").textContent = "";
     show("login-section");
 }
 
 if (localStorage.getItem("jwt")) {
-    document.getElementById("jwt-token").textContent = localStorage.getItem("jwt");
     show("app-section");
 } else {
     show("login-section");
