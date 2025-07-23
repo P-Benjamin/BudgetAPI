@@ -11,47 +11,47 @@ namespace BudgetAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IncomesController : ControllerBase
+    public class SourcesController : ControllerBase
     {
         private readonly AccountContext _context;
 
-        public IncomesController(AccountContext context)
+        public SourcesController(AccountContext context)
         {
             _context = context;
         }
 
-        // GET: api/Incomes
+        // GET: api/Sources
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Income>>> GetIncome()
+        public async Task<ActionResult<IEnumerable<Source>>> GetSource()
         {
-            return await _context.Income.ToListAsync();
+            return await _context.Source.ToListAsync();
         }
 
-        // GET: api/Incomes/5
+        // GET: api/Sources/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Income>> GetIncome(int id)
+        public async Task<ActionResult<Source>> GetSource(int id)
         {
-            var income = await _context.Income.FindAsync(id);
+            var source = await _context.Source.FindAsync(id);
 
-            if (income == null)
+            if (source == null)
             {
                 return NotFound();
             }
 
-            return income;
+            return source;
         }
 
-        // PUT: api/Incomes/5
+        // PUT: api/Sources/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIncome(int id, Income income)
+        public async Task<IActionResult> PutSource(int id, Source source)
         {
-            if (id != income.Id)
+            if (id != source.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(income).State = EntityState.Modified;
+            _context.Entry(source).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace BudgetAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!IncomeExists(id))
+                if (!SourceExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace BudgetAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Incomes
+        // POST: api/Sources
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Income>> PostIncome(Income income)
+        public async Task<ActionResult<Source>> PostSource(Source source)
         {
-            _context.Income.Add(income);
+            _context.Source.Add(source);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetIncome", new { id = income.Id }, income);
+            return CreatedAtAction("GetSource", new { id = source.Id }, source);
         }
 
-        // DELETE: api/Incomes/5
+        // DELETE: api/Sources/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteIncome(int id)
+        public async Task<IActionResult> DeleteSource(int id)
         {
-            var income = await _context.Income.FindAsync(id);
-            if (income == null)
+            var source = await _context.Source.FindAsync(id);
+            if (source == null)
             {
                 return NotFound();
             }
 
-            _context.Income.Remove(income);
+            _context.Source.Remove(source);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool IncomeExists(int id)
+        private bool SourceExists(int id)
         {
-            return _context.Income.Any(e => e.Id == id);
+            return _context.Source.Any(e => e.Id == id);
         }
     }
 }

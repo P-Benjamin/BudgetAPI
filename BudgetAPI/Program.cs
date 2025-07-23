@@ -108,11 +108,18 @@ using (var scope = app.Services.CreateScope())
     if (!context.User.Any())
     {
         context.User.AddRange(
-        new User { Id = 1, Username = "admin", Password = "admin", EmailAddress = "admin@admin", Role = "Admin", Surname = "Admin", GivenName = "Admin" }
-
+        new User { Id = 1, Username = "admin", Password = "admin123", EmailAddress = "admin@admin", Role = "Admin", Surname = "Admin", GivenName = "Admin" }   
         );
         context.SaveChanges();
     }
+    if (!context.Source.Any())
+    {
+        context.Source.AddRange(
+        new Source { Id = 1, Name = "Salaire"}
+        );
+        context.SaveChanges();
+    }
+
 }
 
 app.Run();
