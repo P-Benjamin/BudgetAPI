@@ -21,44 +21,112 @@ namespace BudgetAPI.Controllers
         /// <summary>
         /// Récupère la liste de tous les revenus.
         /// </summary>
-        /// <returns>Liste des revenus</returns>
+        /// <remarks>
+        /// Exemple de réponse :
+        ///
+        ///     [
+        ///       {
+        ///         "id": 1,
+        ///         "sourceName": "Salaire",
+        ///         "amount": 1500,
+        ///         "dateReceived": "2025-07-01T00:00:00"
+        ///       }
+        ///     ]
+        /// </remarks>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Income>>> GetIncome()
+        [ProducesResponseType(typeof(IEnumerable<IncomeViewDTO>), 200)]
+        public async Task<ActionResult<IEnumerable<IncomeViewDTO>>> GetIncome()
         {
-            return await _context.Income.ToListAsync();
+            var result = await _context.Income
+                .Include(i => i.Source)
+                .Select(i => new IncomeViewDTO
+                {
+                    Id = i.Id,
+                    SourceId = i.SourceId,
+                    SourceName = i.Source.Name,
+                    Amount = i.Amount,
+                    DateReceived = i.DateReceived
+                })
+                .ToListAsync();
+
+            return result;
         }
 
         /// <summary>
-        /// Récupère un revenu spécifique selon son ID.
+        /// Récupère un revenu spécifique.
         /// </summary>
-        /// <param name="id">Identifiant du revenu</param>
-        /// <returns>Revenu correspondant</returns>
+        /// <param name="id">ID du revenu</param>
+        /// <remarks>
+        /// Exemple de réponse :
+        ///
+        ///     {
+        ///       "id": 2,
+        ///       "sourceName": "Investissement",
+        ///       "amount": 300,
+        ///       "dateReceived": "2025-07-05T00:00:00"
+        ///     }
+        /// </remarks>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Income>> GetIncome(int id)
+        [ProducesResponseType(typeof(IncomeViewDTO), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IncomeViewDTO>> GetIncome(int id)
         {
-            var income = await _context.Income.FindAsync(id);
+            var income = await _context.Income
+                .Include(i => i.Source)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
             if (income == null)
             {
                 return NotFound();
             }
-            return income;
+
+            var dto = new IncomeViewDTO
+            {
+                Id = income.Id,
+                SourceId = income.SourceId,
+                SourceName = income.Source?.Name,
+                Amount = income.Amount,
+                DateReceived = income.DateReceived
+            };
+
+            return dto;
         }
 
         /// <summary>
         /// Met à jour un revenu existant.
         /// </summary>
-        /// <param name="id">ID du revenu à modifier</param>
-        /// <param name="income">Objet revenu modifié</param>
-        /// <returns>Aucune réponse si succès</returns>
+        /// <param name="id">ID du revenu</param>
+        /// <param name="income">Revenu mis à jour</param>
+        /// <remarks>
+        /// Exemple de requête :
+        ///
+        ///     {
+        ///       "id": 4,
+        ///       "sourceId": 2,
+        ///       "amount": 2200,
+        ///       "dateReceived": "2025-07-24"
+        ///     }
+        /// </remarks>
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIncome(int id, Income income)
+        [ProducesResponseType(typeof(IncomeViewDTO), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IncomeViewDTO>> PutIncome(int id, IncomeDTO income)
         {
             if (id != income.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(income).State = EntityState.Modified;
+            var existingIncome = await _context.Income.FindAsync(id);
+            if (existingIncome == null)
+            {
+                return NotFound();
+            }
+
+            existingIncome.SourceId = income.SourceId;
+            existingIncome.Amount = income.Amount;
+            existingIncome.DateReceived = income.DateReceived;
 
             try
             {
@@ -76,29 +144,73 @@ namespace BudgetAPI.Controllers
                 }
             }
 
-            return NoContent();
+            var updatedIncome = await _context.Income
+                .Include(i => i.Source)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            var dto = new IncomeViewDTO
+            {
+                Id = updatedIncome.Id,
+                SourceId = updatedIncome.SourceId,
+                SourceName = updatedIncome.Source?.Name,
+                Amount = updatedIncome.Amount,
+                DateReceived = updatedIncome.DateReceived
+            };
+
+            return Ok(dto);
         }
 
         /// <summary>
         /// Crée un nouveau revenu.
         /// </summary>
-        /// <param name="income">Objet revenu à ajouter</param>
-        /// <returns>Le revenu créé</returns>
+        /// <param name="incomeDto">Revenu à ajouter</param>
+        /// <remarks>
+        /// Exemple de requête :
+        ///
+        ///     {
+        ///       "sourceId": 1,
+        ///       "amount": 2000,
+        ///       "dateReceived": "2025-07-24"
+        ///     }
+        /// </remarks>
         [HttpPost]
-        public async Task<ActionResult<Income>> PostIncome(Income income)
+        [ProducesResponseType(typeof(IncomeViewDTO), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<IncomeViewDTO>> PostIncome(IncomeDTO incomeDto)
         {
+            var income = new Income
+            {
+                SourceId = incomeDto.SourceId,
+                Amount = incomeDto.Amount,
+                DateReceived = incomeDto.DateReceived
+            };
+
             _context.Income.Add(income);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetIncome", new { id = income.Id }, income);
+            var fullIncome = await _context.Income
+                .Include(i => i.Source)
+                .FirstOrDefaultAsync(i => i.Id == income.Id);
+
+            var dto = new IncomeViewDTO
+            {
+                Id = fullIncome.Id,
+                SourceId = fullIncome.SourceId,
+                SourceName = fullIncome.Source?.Name,
+                Amount = fullIncome.Amount,
+                DateReceived = fullIncome.DateReceived
+            };
+
+            return CreatedAtAction(nameof(GetIncome), new { id = dto.Id }, dto);
         }
 
         /// <summary>
-        /// Supprime un revenu existant.
+        /// Supprime un revenu.
         /// </summary>
-        /// <param name="id">ID du revenu à supprimer</param>
-        /// <returns>Aucune réponse si succès</returns>
+        /// <param name="id">ID du revenu</param>
         [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteIncome(int id)
         {
             var income = await _context.Income.FindAsync(id);
@@ -116,21 +228,21 @@ namespace BudgetAPI.Controllers
         /// <summary>
         /// Calcule le revenu total.
         /// </summary>
-        /// <returns>Total des revenus</returns>
         [HttpGet("total")]
-        public async Task<ActionResult<string>> GetTotalIncome()
+        [ProducesResponseType(typeof(decimal), 200)]
+        public async Task<ActionResult<decimal>> GetTotalIncome()
         {
             var total = await _context.Income.SumAsync(i => i.Amount);
             return Ok(total);
         }
 
         /// <summary>
-        /// Calcule le revenu total pour un mois et une année donnés.
+        /// Calcule le revenu total pour un mois donné.
         /// </summary>
         /// <param name="year">Année</param>
         /// <param name="month">Mois</param>
-        /// <returns>Total pour ce mois</returns>
         [HttpGet("total/month/{year:int}/{month:int}")]
+        [ProducesResponseType(typeof(decimal), 200)]
         public async Task<ActionResult<decimal>> GetTotalByMonth(int year, int month)
         {
             var total = await _context.Income
@@ -144,8 +256,8 @@ namespace BudgetAPI.Controllers
         /// Calcule le revenu total pour une année donnée.
         /// </summary>
         /// <param name="year">Année</param>
-        /// <returns>Total pour cette année</returns>
         [HttpGet("total/year/{year:int}")]
+        [ProducesResponseType(typeof(decimal), 200)]
         public async Task<ActionResult<decimal>> GetTotalByYear(int year)
         {
             var total = await _context.Income
@@ -156,11 +268,12 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Calcule le revenu total sur une plage de dates donnée.
+        /// Calcule le revenu total entre deux dates.
         /// </summary>
-        /// <param name="range">Objet contenant les dates de début et de fin</param>
-        /// <returns>Total pour la période spécifiée</returns>
+        /// <param name="range">Date de début et de fin</param>
         [HttpPost("total/range")]
+        [ProducesResponseType(typeof(decimal), 200)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult<decimal>> GetTotalByDateRange([FromBody] DateRangeDto range)
         {
             if (range.Start > range.End)
@@ -175,6 +288,33 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
+        /// <summary>
+        /// Récupère tous les revenus associés à une source spécifique.
+        /// </summary>
+        /// <param name="sourceId">ID de la source</param>
+        /// <returns>Liste des revenus liés à cette source</returns>
+        [HttpGet("by-source/{sourceId}")]
+        [ProducesResponseType(typeof(IEnumerable<IncomeViewDTO>), 200)]
+        public async Task<ActionResult<IEnumerable<IncomeViewDTO>>> GetIncomesBySource(int sourceId)
+        {
+            var incomes = await _context.Income
+                .Include(i => i.Source)
+                .Where(i => i.SourceId == sourceId)
+                .Select(i => new IncomeViewDTO
+                {
+                    Id = i.Id,
+                    SourceName = i.Source.Name,
+                    Amount = i.Amount,
+                    DateReceived = i.DateReceived
+                })
+                .ToListAsync();
+
+            return Ok(incomes);
+        }
+
+        /// <summary>
+        /// Vérifie si un revenu existe.
+        /// </summary>
         private bool IncomeExists(int id)
         {
             return _context.Income.Any(e => e.Id == id);

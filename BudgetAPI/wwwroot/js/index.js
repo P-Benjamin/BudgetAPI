@@ -1,6 +1,13 @@
 ﻿const API_BASE = "https://localhost:7058/api";
 const token = localStorage.getItem("jwt");
 
+window.addEventListener('DOMContentLoaded', () => {
+    loadSources(); 
+    fetchSources();
+    fetchIncomes();
+    fetchOutcomes();
+});
+
 async function getTotal(type) {
     const res = await fetch(`${API_BASE}/${type}/total`, {
         method: 'GET',
@@ -69,11 +76,11 @@ async function fetchIncomes() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
                                             <td>${i.id}</td>
-                                            <td>${i.source}</td>
+                                            <td>${i.sourceName}</td>
                                             <td>${i.amount}</td>
                                             <td>${i.dateReceived.split("T")[0]}</td>
                                             <td>
-                                                <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                                <button onclick="editIncome(${i.id}, '${i.sourceId}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                                 <button onclick="deleteIncome(${i.id})">Supprimer</button>
                                             </td>
                                         `;
@@ -102,11 +109,13 @@ async function deleteIncome(id) {
 
 async function saveIncome() {
     const id = document.getElementById("income-id").value;
-    const source = document.getElementById("income-source").value;
+    const sourceId = parseInt(document.getElementById("income-source").value);
     const amount = parseFloat(document.getElementById("income-amount").value);
     const dateReceived = document.getElementById("income-date").value;
 
-    const income = { source, amount, dateReceived };
+    const income = { sourceId, amount, dateReceived };
+
+    console.log(income);
 
     if (!id) {
         await fetch(`${API_BASE}/incomes`, {
@@ -117,13 +126,14 @@ async function saveIncome() {
             },
             body: JSON.stringify(income)
         });
+
     } else {
         await fetch(`${API_BASE}/incomes/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json", 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+            body: JSON.stringify({ id: parseInt(id), sourceId, amount, dateReceived })
         });
     }
     fetchIncomes();
@@ -144,16 +154,60 @@ async function fetchOutcomes() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
                                 <td>${i.id}</td>
-                                <td>${i.source}</td>
+                                <td>${i.sourceName}</td>
                                 <td>${i.amount}</td>
                                 <td>${i.dateReceived.split("T")[0]}</td>
                                 <td>
-                                    <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                    <button onclick="editOutcome(${i.id}, '${i.sourceId}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                     <button onclick="deleteOutcome(${i.id})">Supprimer</button>
                                 </td>
                             `;
         tbody.appendChild(tr);
     });
+}
+
+async function loadSources() {
+    try {
+        const response = await fetch("/api/sources", {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        const sources = await response.json();
+
+        const selectIncomeSource = document.getElementById("income-source");
+        const selectOutcomeSource = document.getElementById("outcome-source");
+
+        selectIncomeSource.innerHTML = "";
+        selectOutcomeSource.innerHTML = "";
+
+        const incomePlaceholder = document.createElement("option");
+        incomePlaceholder.value = "";
+        incomePlaceholder.textContent = "-- Choisir une source --";
+        incomePlaceholder.disabled = true;
+        incomePlaceholder.selected = true;
+
+        const outcomePlaceholder = incomePlaceholder.cloneNode(true);
+
+        selectIncomeSource.appendChild(incomePlaceholder);
+        selectOutcomeSource.appendChild(outcomePlaceholder);
+
+        sources.forEach(source => {
+            const option1 = document.createElement("option");
+            option1.value = source.id;
+            option1.textContent = source.name;
+
+            const option2 = option1.cloneNode(true); 
+
+            selectIncomeSource.appendChild(option1);
+            selectOutcomeSource.appendChild(option2);
+        });
+
+    } catch (err) {
+        console.error("Erreur lors du chargement des sources :", err);
+    }
 }
 
 function editOutcome(id, source, amount, date) {
@@ -177,11 +231,11 @@ async function deleteOutcome(id) {
 
 async function saveOutcome() {
     const id = document.getElementById("outcome-id").value;
-    const source = document.getElementById("outcome-source").value;
+    const sourceId = parseInt(document.getElementById("outcome-source").value);
     const amount = parseFloat(document.getElementById("outcome-amount").value);
     const dateReceived = document.getElementById("outcome-date").value;
 
-    const outcome = { source, amount, dateReceived };
+    const outcome = { sourceId, amount, dateReceived };
 
     if (!id) {
         await fetch(`${API_BASE}/outcomes`, {
@@ -199,10 +253,91 @@ async function saveOutcome() {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+            body: JSON.stringify({ id: parseInt(id), sourceId, amount, dateReceived })
         });
     }
     fetchOutcomes();
+}
+
+async function fetchSources() {
+    const response = await fetch("/api/sources", {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    const sources = await response.json();
+
+    const tbody = document.querySelector("#source-table tbody");
+    tbody.innerHTML = "";
+
+    sources.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>
+                <button onclick="editSource(${s.id}, '${s.name}')">✏️</button>
+                <button onclick="deleteSource(${s.id})">🗑️</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function editSource(id, name) {
+    document.getElementById("source-id").value = id;
+    document.getElementById("source-name").value = name;
+}
+
+async function saveSource() {
+    const idValue = document.getElementById("source-id").value;
+    const name = document.getElementById("source-name").value;
+
+    const source = { name };
+
+    const isEdit = idValue !== "";
+    const url = isEdit ? `/api/sources/${idValue}` : "/api/sources";
+    const method = isEdit ? "PUT" : "POST";
+
+    if (isEdit) {
+        source.id = parseInt(idValue);
+    }
+
+    const response = await fetch(url, {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(source)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error("Erreur :", error);
+        alert("Erreur lors de l'enregistrement.");
+        return;
+    }
+
+    document.getElementById("source-id").value = "";
+    document.getElementById("source-name").value = "";
+
+    fetchSources();
+    loadSources(); 
+}
+
+async function deleteSource(id) {
+    if (!confirm("Supprimer cette source ?")) return;
+
+    const response = await fetch(`/api/sources/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (response.status === 400) {
+        const message = await response.text();
+        alert("Erreur : " + message);
+    }
+
+    fetchSources();
+    loadSources();
 }
 
 let chart;
