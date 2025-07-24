@@ -77,7 +77,7 @@ async function fetchIncomes() {
                                             <td>${i.amount}</td>
                                             <td>${i.dateReceived.split("T")[0]}</td>
                                             <td>
-                                                <button onclick="editIncome(${i.id}, '${i.sourceName}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                                <button onclick="editIncome(${i.id}, '${i.sourceId}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                                 <button onclick="deleteIncome(${i.id})">Supprimer</button>
                                             </td>
                                         `;
@@ -155,7 +155,7 @@ async function fetchOutcomes() {
                                 <td>${i.amount}</td>
                                 <td>${i.dateReceived.split("T")[0]}</td>
                                 <td>
-                                    <button onclick="editOutcome(${i.id}, '${i.sourceName}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                    <button onclick="editOutcome(${i.id}, '${i.sourceId}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                     <button onclick="deleteOutcome(${i.id})">Supprimer</button>
                                 </td>
                             `;
@@ -165,24 +165,41 @@ async function fetchOutcomes() {
 
 async function loadSources() {
     try {
-        const response = await fetch("/api/sources");
+        const response = await fetch("/api/sources", {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
         const sources = await response.json();
-        const select = document.getElementById("income-source");
 
-        select.innerHTML = "";
+        const selectIncomeSource = document.getElementById("income-source");
+        const selectOutcomeSource = document.getElementById("outcome-source");
 
-        const placeholderOption = document.createElement("option");
-        placeholderOption.value = "";
-        placeholderOption.textContent = "-- Choisir une source --";
-        placeholderOption.disabled = true;
-        placeholderOption.selected = true;
-        select.appendChild(placeholderOption);
+        selectIncomeSource.innerHTML = "";
+        selectOutcomeSource.innerHTML = "";
+
+        const incomePlaceholder = document.createElement("option");
+        incomePlaceholder.value = "";
+        incomePlaceholder.textContent = "-- Choisir une source --";
+        incomePlaceholder.disabled = true;
+        incomePlaceholder.selected = true;
+
+        const outcomePlaceholder = incomePlaceholder.cloneNode(true);
+
+        selectIncomeSource.appendChild(incomePlaceholder);
+        selectOutcomeSource.appendChild(outcomePlaceholder);
 
         sources.forEach(source => {
-            const option = document.createElement("option");
-            option.value = source.id;
-            option.textContent = source.name;
-            select.appendChild(option);
+            const option1 = document.createElement("option");
+            option1.value = source.id;
+            option1.textContent = source.name;
+
+            const option2 = option1.cloneNode(true); 
+
+            selectIncomeSource.appendChild(option1);
+            selectOutcomeSource.appendChild(option2);
         });
 
     } catch (err) {
@@ -211,11 +228,11 @@ async function deleteOutcome(id) {
 
 async function saveOutcome() {
     const id = document.getElementById("outcome-id").value;
-    const source = document.getElementById("outcome-source").value;
+    const sourceId = parseInt(document.getElementById("outcome-source").value);
     const amount = parseFloat(document.getElementById("outcome-amount").value);
     const dateReceived = document.getElementById("outcome-date").value;
 
-    const outcome = { source, amount, dateReceived };
+    const outcome = { sourceId, amount, dateReceived };
 
     if (!id) {
         await fetch(`${API_BASE}/outcomes`, {
@@ -233,7 +250,7 @@ async function saveOutcome() {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+            body: JSON.stringify({ id: parseInt(id), sourceId, amount, dateReceived })
         });
     }
     fetchOutcomes();

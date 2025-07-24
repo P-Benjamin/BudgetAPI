@@ -42,6 +42,7 @@ namespace BudgetAPI.Controllers
                 .Select(i => new IncomeViewDTO
                 {
                     Id = i.Id,
+                    SourceId = i.SourceId,
                     SourceName = i.Source.Name,
                     Amount = i.Amount,
                     DateReceived = i.DateReceived
@@ -82,6 +83,7 @@ namespace BudgetAPI.Controllers
             var dto = new IncomeViewDTO
             {
                 Id = income.Id,
+                SourceId = income.SourceId,
                 SourceName = income.Source?.Name,
                 Amount = income.Amount,
                 DateReceived = income.DateReceived
@@ -149,6 +151,7 @@ namespace BudgetAPI.Controllers
             var dto = new IncomeViewDTO
             {
                 Id = updatedIncome.Id,
+                SourceId = updatedIncome.SourceId,
                 SourceName = updatedIncome.Source?.Name,
                 Amount = updatedIncome.Amount,
                 DateReceived = updatedIncome.DateReceived
@@ -192,6 +195,7 @@ namespace BudgetAPI.Controllers
             var dto = new IncomeViewDTO
             {
                 Id = fullIncome.Id,
+                SourceId = fullIncome.SourceId,
                 SourceName = fullIncome.Source?.Name,
                 Amount = fullIncome.Amount,
                 DateReceived = fullIncome.DateReceived

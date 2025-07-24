@@ -42,6 +42,7 @@ namespace BudgetAPI.Controllers
                 .Select(o => new OutcomeViewDTO
                 {
                     Id = o.Id,
+                    SourceId = o.SourceId,
                     SourceName = o.Source.Name,
                     Amount = o.Amount,
                     DateReceived = o.DateReceived
@@ -75,6 +76,7 @@ namespace BudgetAPI.Controllers
             var dto = new OutcomeViewDTO
             {
                 Id = outcome.Id,
+                SourceId = outcome.SourceId,
                 SourceName = outcome.Source.Name,
                 Amount = outcome.Amount,
                 DateReceived = outcome.DateReceived
@@ -127,6 +129,7 @@ namespace BudgetAPI.Controllers
             var viewDto = new OutcomeViewDTO
             {
                 Id = updated.Id,
+                SourceId = updated.SourceId,
                 SourceName = updated.Source?.Name,
                 Amount = updated.Amount,
                 DateReceived = updated.DateReceived
@@ -168,6 +171,7 @@ namespace BudgetAPI.Controllers
             var viewDto = new OutcomeViewDTO
             {
                 Id = fullOutcome.Id,
+                SourceId = fullOutcome.SourceId,
                 SourceName = fullOutcome.Source?.Name,
                 Amount = fullOutcome.Amount,
                 DateReceived = fullOutcome.DateReceived
