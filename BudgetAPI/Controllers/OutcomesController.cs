@@ -287,8 +287,15 @@ namespace BudgetAPI.Controllers
         /// <returns>Liste des dépenses liées à cette source</returns>
         [HttpGet("by-source/{sourceId}")]
         [ProducesResponseType(typeof(IEnumerable<OutcomeViewDTO>), 200)]
+        [ProducesResponseType(404)]
         public async Task<ActionResult<IEnumerable<OutcomeViewDTO>>> GetOutcomesBySource(int sourceId)
         {
+            var sourceExists = await _context.Source.AnyAsync(s => s.Id == sourceId);
+            if (!sourceExists)
+            {
+                return NotFound($"Aucune source avec l'ID {sourceId} n'a été trouvée.");
+            }
+
             var outcomes = await _context.Outcome
                 .Include(o => o.Source)
                 .Where(o => o.SourceId == sourceId)

@@ -88,6 +88,38 @@ async function fetchIncomes() {
     });
 }
 
+async function fetchIncomesBySource() {
+    const sourceId = document.getElementById("source-filter").value;
+    if (!sourceId) {
+        alert("Veuillez choisir une source.");
+        return;
+    }
+
+    const response = await fetch(`/api/incomes/by-source/${sourceId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+        alert("Erreur lors de la récupération des données.");
+        return;
+    }
+
+    const incomes = await response.json();
+    const tbody = document.querySelector("#filtered-income-table tbody");
+    tbody.innerHTML = "";
+
+    incomes.forEach(income => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${income.id}</td>
+            <td>${income.sourceName}</td>
+            <td>${income.amount.toFixed(2)}</td>
+            <td>${new Date(income.dateReceived).toLocaleDateString()}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
 function editIncome(id, source, amount, date) {
     document.getElementById("income-id").value = id;
     document.getElementById("income-source").value = source;
@@ -166,45 +198,73 @@ async function fetchOutcomes() {
     });
 }
 
+async function fetchOutcomesBySource() {
+    const sourceId = document.getElementById("source-filter-outcome").value;
+    if (!sourceId) {
+        alert("Veuillez choisir une source.");
+        return;
+    }
+
+    const response = await fetch(`/api/outcomes/by-source/${sourceId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+        alert("Erreur lors de la récupération des outcomes.");
+        return;
+    }
+
+    const outcomes = await response.json();
+    const tbody = document.querySelector("#filtered-outcome-table tbody");
+    tbody.innerHTML = "";
+
+    outcomes.forEach(outcome => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${outcome.id}</td>
+            <td>${outcome.sourceName}</td>
+            <td>${outcome.amount.toFixed(2)}</td>
+            <td>${new Date(outcome.dateReceived).toLocaleDateString()}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+
 async function loadSources() {
     try {
         const response = await fetch("/api/sources", {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            }
+            headers: { "Authorization": `Bearer ${token}` }
         });
         const sources = await response.json();
 
         const selectIncomeSource = document.getElementById("income-source");
         const selectOutcomeSource = document.getElementById("outcome-source");
+        const selectFilterSource = document.getElementById("source-filter");
+        const selectFilterSourceOutcome = document.getElementById("source-filter-outcome");
 
-        selectIncomeSource.innerHTML = "";
-        selectOutcomeSource.innerHTML = "";
 
-        const incomePlaceholder = document.createElement("option");
-        incomePlaceholder.value = "";
-        incomePlaceholder.textContent = "-- Choisir une source --";
-        incomePlaceholder.disabled = true;
-        incomePlaceholder.selected = true;
-
-        const outcomePlaceholder = incomePlaceholder.cloneNode(true);
-
-        selectIncomeSource.appendChild(incomePlaceholder);
-        selectOutcomeSource.appendChild(outcomePlaceholder);
-
-        sources.forEach(source => {
-            const option1 = document.createElement("option");
-            option1.value = source.id;
-            option1.textContent = source.name;
-
-            const option2 = option1.cloneNode(true); 
-
-            selectIncomeSource.appendChild(option1);
-            selectOutcomeSource.appendChild(option2);
+        [selectIncomeSource, selectOutcomeSource, selectFilterSource, selectFilterSourceOutcome].forEach(select => {
+            select.innerHTML = "";
+            const placeholder = document.createElement("option");
+            placeholder.textContent = "-- Choisir une source --";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            placeholder.value = "";
+            select.appendChild(placeholder);
         });
 
+        sources.forEach(source => {
+            const option = document.createElement("option");
+            option.value = source.id;
+            option.textContent = source.name;
+
+            selectIncomeSource.appendChild(option.cloneNode(true));
+            selectOutcomeSource.appendChild(option.cloneNode(true));
+            selectFilterSource.appendChild(option.cloneNode(true));
+            selectFilterSourceOutcome.appendChild(option.cloneNode(true));
+
+        });
     } catch (err) {
         console.error("Erreur lors du chargement des sources :", err);
     }
@@ -274,8 +334,8 @@ async function fetchSources() {
             <td>${s.id}</td>
             <td>${s.name}</td>
             <td>
-                <button onclick="editSource(${s.id}, '${s.name}')">✏️</button>
-                <button onclick="deleteSource(${s.id})">🗑️</button>
+                <button onclick="editSource(${s.id}, '${s.name}')">Modifier</button>
+                <button onclick="deleteSource(${s.id})">Supprimer</button>
             </td>`;
         tbody.appendChild(tr);
     });

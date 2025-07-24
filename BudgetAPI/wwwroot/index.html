@@ -72,6 +72,19 @@
     </div>
 
     <div class="section">
+        <h2>Afficher les Incomes par Source</h2>
+        <label for="source-filter">Choisir une source :</label>
+        <select id="source-filter"></select>
+        <button onclick="fetchIncomesBySource()">Afficher</button>
+        <table id="filtered-income-table">
+            <thead>
+                <tr><th>ID</th><th>Source</th><th>Amount</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="section">
         <h2>Liste des Outcomes</h2>
         <button onclick="fetchOutcomes()">Charger les outcomes</button>
         <table id="outcome-table">
@@ -93,6 +106,19 @@
         <label>Date :</label>
         <input type="date" id="outcome-date">
         <button onclick="saveOutcome()">Enregistrer</button>
+    </div>
+
+    <div class="section">
+        <h2>Afficher les Outcomes par Source</h2>
+        <label for="source-filter-outcome">Choisir une source :</label>
+        <select id="source-filter-outcome"></select>
+        <button onclick="fetchOutcomesBySource()">Afficher</button>
+        <table id="filtered-outcome-table">
+            <thead>
+                <tr><th>ID</th><th>Source</th><th>Amount</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="section">
