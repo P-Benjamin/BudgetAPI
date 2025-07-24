@@ -3,6 +3,9 @@ const token = localStorage.getItem("jwt");
 
 window.addEventListener('DOMContentLoaded', () => {
     loadSources(); 
+    fetchSources();
+    fetchIncomes();
+    fetchOutcomes();
 });
 
 async function getTotal(type) {
@@ -254,6 +257,87 @@ async function saveOutcome() {
         });
     }
     fetchOutcomes();
+}
+
+async function fetchSources() {
+    const response = await fetch("/api/sources", {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    const sources = await response.json();
+
+    const tbody = document.querySelector("#source-table tbody");
+    tbody.innerHTML = "";
+
+    sources.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>
+                <button onclick="editSource(${s.id}, '${s.name}')">✏️</button>
+                <button onclick="deleteSource(${s.id})">🗑️</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function editSource(id, name) {
+    document.getElementById("source-id").value = id;
+    document.getElementById("source-name").value = name;
+}
+
+async function saveSource() {
+    const idValue = document.getElementById("source-id").value;
+    const name = document.getElementById("source-name").value;
+
+    const source = { name };
+
+    const isEdit = idValue !== "";
+    const url = isEdit ? `/api/sources/${idValue}` : "/api/sources";
+    const method = isEdit ? "PUT" : "POST";
+
+    if (isEdit) {
+        source.id = parseInt(idValue);
+    }
+
+    const response = await fetch(url, {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(source)
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error("Erreur :", error);
+        alert("Erreur lors de l'enregistrement.");
+        return;
+    }
+
+    document.getElementById("source-id").value = "";
+    document.getElementById("source-name").value = "";
+
+    fetchSources();
+    loadSources(); 
+}
+
+async function deleteSource(id) {
+    if (!confirm("Supprimer cette source ?")) return;
+
+    const response = await fetch(`/api/sources/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (response.status === 400) {
+        const message = await response.text();
+        alert("Erreur : " + message);
+    }
+
+    fetchSources();
+    loadSources();
 }
 
 let chart;
