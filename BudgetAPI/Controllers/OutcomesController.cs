@@ -280,6 +280,30 @@ namespace BudgetAPI.Controllers
             return Ok(total);
         }
 
+        /// <summary>
+        /// Récupère toutes les dépenses associées à une source spécifique.
+        /// </summary>
+        /// <param name="sourceId">ID de la source</param>
+        /// <returns>Liste des dépenses liées à cette source</returns>
+        [HttpGet("by-source/{sourceId}")]
+        [ProducesResponseType(typeof(IEnumerable<OutcomeViewDTO>), 200)]
+        public async Task<ActionResult<IEnumerable<OutcomeViewDTO>>> GetOutcomesBySource(int sourceId)
+        {
+            var outcomes = await _context.Outcome
+                .Include(o => o.Source)
+                .Where(o => o.SourceId == sourceId)
+                .Select(o => new OutcomeViewDTO
+                {
+                    Id = o.Id,
+                    SourceName = o.Source.Name,
+                    Amount = o.Amount,
+                    DateReceived = o.DateReceived
+                })
+                .ToListAsync();
+
+            return Ok(outcomes);
+        }
+
         private bool OutcomeExists(int id)
         {
             return _context.Outcome.Any(e => e.Id == id);

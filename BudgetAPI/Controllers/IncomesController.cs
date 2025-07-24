@@ -289,6 +289,30 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
+        /// Récupère tous les revenus associés à une source spécifique.
+        /// </summary>
+        /// <param name="sourceId">ID de la source</param>
+        /// <returns>Liste des revenus liés à cette source</returns>
+        [HttpGet("by-source/{sourceId}")]
+        [ProducesResponseType(typeof(IEnumerable<IncomeViewDTO>), 200)]
+        public async Task<ActionResult<IEnumerable<IncomeViewDTO>>> GetIncomesBySource(int sourceId)
+        {
+            var incomes = await _context.Income
+                .Include(i => i.Source)
+                .Where(i => i.SourceId == sourceId)
+                .Select(i => new IncomeViewDTO
+                {
+                    Id = i.Id,
+                    SourceName = i.Source.Name,
+                    Amount = i.Amount,
+                    DateReceived = i.DateReceived
+                })
+                .ToListAsync();
+
+            return Ok(incomes);
+        }
+
+        /// <summary>
         /// Vérifie si un revenu existe.
         /// </summary>
         private bool IncomeExists(int id)
