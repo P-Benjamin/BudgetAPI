@@ -22,6 +22,12 @@ namespace BudgetAPI.Models
                 .WithMany() 
                 .HasForeignKey(i => i.SourceId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Income>()
+                .HasOne(i => i.Source)
+                .WithMany()
+                .HasForeignKey(i => i.SourceId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

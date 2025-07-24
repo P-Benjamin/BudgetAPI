@@ -73,11 +73,11 @@ async function fetchIncomes() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
                                             <td>${i.id}</td>
-                                            <td>${i.source}</td>
+                                            <td>${i.sourceName}</td>
                                             <td>${i.amount}</td>
                                             <td>${i.dateReceived.split("T")[0]}</td>
                                             <td>
-                                                <button onclick="editIncome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                                <button onclick="editIncome(${i.id}, '${i.sourceName}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                                 <button onclick="deleteIncome(${i.id})">Supprimer</button>
                                             </td>
                                         `;
@@ -130,7 +130,7 @@ async function saveIncome() {
             headers: {
                 "Content-Type": "application/json", 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ id: parseInt(id), source, amount, dateReceived })
+            body: JSON.stringify({ id: parseInt(id), sourceId, amount, dateReceived })
         });
     }
     fetchIncomes();
@@ -151,11 +151,11 @@ async function fetchOutcomes() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
                                 <td>${i.id}</td>
-                                <td>${i.source}</td>
+                                <td>${i.sourceName}</td>
                                 <td>${i.amount}</td>
                                 <td>${i.dateReceived.split("T")[0]}</td>
                                 <td>
-                                    <button onclick="editOutcome(${i.id}, '${i.source}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
+                                    <button onclick="editOutcome(${i.id}, '${i.sourceName}', ${i.amount}, '${i.dateReceived.split("T")[0]}')">Modifier</button>
                                     <button onclick="deleteOutcome(${i.id})">Supprimer</button>
                                 </td>
                             `;

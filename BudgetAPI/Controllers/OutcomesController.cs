@@ -19,88 +19,173 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Récupère tous les résultats (dépenses).
+        /// Récupère toutes les dépenses.
         /// </summary>
-        /// <returns>Liste de toutes les dépenses</returns>
+        /// <remarks>
+        /// Exemple de réponse :
+        ///
+        ///     [
+        ///       {
+        ///         "id": 1,
+        ///         "sourceName": "Loyer",
+        ///         "amount": 800,
+        ///         "dateReceived": "2025-07-24"
+        ///       }
+        ///     ]
+        /// </remarks>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Outcome>>> GetOutcome()
+        [ProducesResponseType(typeof(IEnumerable<OutcomeViewDTO>), 200)]
+        public async Task<ActionResult<IEnumerable<OutcomeViewDTO>>> GetOutcome()
         {
-            return await _context.Outcome.ToListAsync();
+            var outcomes = await _context.Outcome
+                .Include(o => o.Source)
+                .Select(o => new OutcomeViewDTO
+                {
+                    Id = o.Id,
+                    SourceName = o.Source.Name,
+                    Amount = o.Amount,
+                    DateReceived = o.DateReceived
+                })
+                .ToListAsync();
+
+            return Ok(outcomes);
         }
 
         /// <summary>
         /// Récupère une dépense par son ID.
         /// </summary>
-        /// <param name="id">Identifiant de la dépense</param>
-        /// <returns>Dépense correspondante</returns>
+        /// <param name="id">Identifiant unique de la dépense</param>
+        /// <remarks>
+        /// Exemple : GET /api/outcomes/1
+        /// </remarks>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Outcome>> GetOutcome(int id)
+        [ProducesResponseType(typeof(OutcomeViewDTO), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<OutcomeViewDTO>> GetOutcome(int id)
         {
-            var outcome = await _context.Outcome.FindAsync(id);
+            var outcome = await _context.Outcome
+                .Include(o => o.Source)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (outcome == null)
             {
                 return NotFound();
             }
 
-            return outcome;
+            var dto = new OutcomeViewDTO
+            {
+                Id = outcome.Id,
+                SourceName = outcome.Source.Name,
+                Amount = outcome.Amount,
+                DateReceived = outcome.DateReceived
+            };
+
+            return Ok(dto);
         }
 
         /// <summary>
-        /// Modifie une dépense existante.
+        /// Met à jour une dépense existante.
         /// </summary>
         /// <param name="id">ID de la dépense à modifier</param>
-        /// <param name="outcome">Nouvelle valeur de la dépense</param>
-        /// <returns>Code HTTP 204 si succès</returns>
+        /// <param name="dto">Données mises à jour de la dépense</param>
+        /// <remarks>
+        /// Exemple de requête :
+        ///
+        ///     PUT /api/outcomes/1
+        ///     {
+        ///       "id": 1,
+        ///       "sourceId": 2,
+        ///       "amount": 900,
+        ///       "dateReceived": "2025-07-25"
+        ///     }
+        /// </remarks>
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutOutcome(int id, Outcome outcome)
+        [ProducesResponseType(typeof(OutcomeViewDTO), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<OutcomeViewDTO>> PutOutcome(int id, OutcomeDTO dto)
         {
-            if (id != outcome.Id)
+            if (id != dto.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(outcome).State = EntityState.Modified;
-
-            try
+            var existing = await _context.Outcome.FindAsync(id);
+            if (existing == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OutcomeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
-            return NoContent();
+            existing.SourceId = dto.SourceId;
+            existing.Amount = dto.Amount;
+            existing.DateReceived = dto.DateReceived;
+
+            await _context.SaveChangesAsync();
+
+            var updated = await _context.Outcome.Include(o => o.Source).FirstOrDefaultAsync(o => o.Id == id);
+
+            var viewDto = new OutcomeViewDTO
+            {
+                Id = updated.Id,
+                SourceName = updated.Source?.Name,
+                Amount = updated.Amount,
+                DateReceived = updated.DateReceived
+            };
+
+            return Ok(viewDto);
         }
 
         /// <summary>
         /// Crée une nouvelle dépense.
         /// </summary>
-        /// <param name="outcome">Objet dépense à créer</param>
-        /// <returns>La dépense créée avec son ID</returns>
+        /// <param name="dto">Objet dépense à créer</param>
+        /// <remarks>
+        /// Exemple de requête :
+        ///
+        ///     {
+        ///       "sourceId": 2,
+        ///       "amount": 600,
+        ///       "dateReceived": "2025-07-24"
+        ///     }
+        /// </remarks>
         [HttpPost]
-        public async Task<ActionResult<Outcome>> PostOutcome(Outcome outcome)
+        [ProducesResponseType(typeof(OutcomeViewDTO), 201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<OutcomeViewDTO>> PostOutcome(OutcomeDTO dto)
         {
+            var outcome = new Outcome
+            {
+                SourceId = dto.SourceId,
+                Amount = dto.Amount,
+                DateReceived = dto.DateReceived
+            };
+
             _context.Outcome.Add(outcome);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetOutcome", new { id = outcome.Id }, outcome);
+            var fullOutcome = await _context.Outcome.Include(o => o.Source).FirstOrDefaultAsync(o => o.Id == outcome.Id);
+
+            var viewDto = new OutcomeViewDTO
+            {
+                Id = fullOutcome.Id,
+                SourceName = fullOutcome.Source?.Name,
+                Amount = fullOutcome.Amount,
+                DateReceived = fullOutcome.DateReceived
+            };
+
+            return CreatedAtAction(nameof(GetOutcome), new { id = outcome.Id }, viewDto);
         }
 
         /// <summary>
-        /// Supprime une dépense existante.
+        /// Supprime une dépense.
         /// </summary>
         /// <param name="id">ID de la dépense à supprimer</param>
-        /// <returns>Code HTTP 204 si succès</returns>
+        /// <remarks>
+        /// Exemple : DELETE /api/outcomes/1
+        /// </remarks>
         [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteOutcome(int id)
         {
             var outcome = await _context.Outcome.FindAsync(id);
@@ -118,8 +203,11 @@ namespace BudgetAPI.Controllers
         /// <summary>
         /// Calcule le total de toutes les dépenses.
         /// </summary>
-        /// <returns>Total des montants des dépenses</returns>
+        /// <remarks>
+        /// Exemple : GET /api/outcomes/total
+        /// </remarks>
         [HttpGet("total")]
+        [ProducesResponseType(typeof(decimal), 200)]
         public async Task<ActionResult<decimal>> GetTotalAmount()
         {
             var total = await _context.Outcome.SumAsync(o => o.Amount);
@@ -127,12 +215,13 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Calcule le total des dépenses pour un mois et une année donnés.
+        /// Calcule le total des dépenses pour un mois donné.
         /// </summary>
-        /// <param name="year">Année</param>
-        /// <param name="month">Mois</param>
-        /// <returns>Total des dépenses pour ce mois</returns>
+        /// <remarks>
+        /// Exemple : GET /api/outcomes/total/month/2025/7
+        /// </remarks>
         [HttpGet("total/month/{year:int}/{month:int}")]
+        [ProducesResponseType(typeof(decimal), 200)]
         public async Task<ActionResult<decimal>> GetTotalByMonth(int year, int month)
         {
             var total = await _context.Outcome
@@ -145,9 +234,11 @@ namespace BudgetAPI.Controllers
         /// <summary>
         /// Calcule le total des dépenses pour une année donnée.
         /// </summary>
-        /// <param name="year">Année</param>
-        /// <returns>Total des dépenses pour cette année</returns>
+        /// <remarks>
+        /// Exemple : GET /api/outcomes/total/year/2025
+        /// </remarks>
         [HttpGet("total/year/{year:int}")]
+        [ProducesResponseType(typeof(decimal), 200)]
         public async Task<ActionResult<decimal>> GetTotalByYear(int year)
         {
             var total = await _context.Outcome
@@ -158,11 +249,19 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Calcule le total des dépenses entre deux dates.
+        /// Calcule le total des dépenses sur une période donnée.
         /// </summary>
-        /// <param name="range">Plage de dates contenant la date de début et de fin</param>
-        /// <returns>Total des dépenses sur la période</returns>
+        /// <remarks>
+        /// Exemple de requête :
+        ///
+        ///     {
+        ///       "start": "2025-07-01",
+        ///       "end": "2025-07-31"
+        ///     }
+        /// </remarks>
         [HttpPost("total/range")]
+        [ProducesResponseType(typeof(decimal), 200)]
+        [ProducesResponseType(400)]
         public async Task<ActionResult<decimal>> GetTotalByDateRange([FromBody] DateRangeDto range)
         {
             if (range.Start > range.End)

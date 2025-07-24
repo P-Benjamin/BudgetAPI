@@ -115,7 +115,11 @@ using (var scope = app.Services.CreateScope())
     if (!context.Source.Any())
     {
         context.Source.AddRange(
-        new Source { Id = 1, Name = "Salaire"}
+        new Source { Id = 1, Name = "Salaire"},
+        new Source { Id = 2, Name = "Remboursement" },
+        new Source { Id = 3, Name = "Cadeaux" }
+
+
         );
         context.SaveChanges();
     }
