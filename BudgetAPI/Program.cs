@@ -118,8 +118,6 @@ using (var scope = app.Services.CreateScope())
         new Source { Id = 1, Name = "Salaire"},
         new Source { Id = 2, Name = "Remboursement" },
         new Source { Id = 3, Name = "Cadeaux" }
-
-
         );
         context.SaveChanges();
     }
