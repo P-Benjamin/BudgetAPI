@@ -53,6 +53,25 @@ Authentifie un utilisateur et génère un jeton JWT.
 
 ---
 
+### Sources
+
+`GET /api/sources`
+Liste toutes les sources disponibles.
+
+`GET /api/sources/{id}` 
+Récupère une source spécifique.
+
+`POST /api/sources`
+Crée une nouvelle source.
+
+`PUT /api/sources/{id}`
+Met à jour une source existante.
+
+`DELETE /api/sources/{id}`
+Supprime une source.
+
+---
+
 ### Incomes
 
 `GET /api/Incomes`  
@@ -81,6 +100,9 @@ Calcule le revenu total pour une année donnée.
 
 `POST /api/Incomes/total/range`  
 Calcule le revenu total sur une plage de dates donnée.
+
+`GET /api/incomes/by-source/{sourceId}`
+Liste tous les revenus d’une source spécifique.
 
 ---
 
@@ -113,6 +135,10 @@ Calcule les dépenses totales pour une année donnée.
 `POST /api/Outcomes/total/range`  
 Calcule les dépenses totales sur une plage de dates.
 
+`GET /api/outcomes/by-source/{sourceId}`
+Liste toutes les dépenses d’une source spécifique.
+
+
 ---
 
 ### Users 
@@ -131,6 +157,8 @@ Met à jour un utilisateur existant.
 
 `DELETE /api/Users/{id}`  
 Supprime un utilisateur existant par ID.
+
+---
 
 ## Auteurs
 PINOSA Benjamin et SUSINI Mégane
