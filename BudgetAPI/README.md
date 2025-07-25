@@ -11,7 +11,7 @@ Une interface HTML/JavaScript est également fournie pour consommer facilement l’
 - Gestion des utilisateurs avec DTO 
 - Création, modification, suppression de revenus et dépenses
 - Calculs de totaux : global, par mois, par année, par période
-- Interface web simple (HTML/JS) avec Chart.js
+- Interface web simple (HTML/JS)
 - Swagger intégré pour explorer l’API
 - Validation de tous les modèles avec `[Required]`, `[Range]`, etc.
 - Base de données en mémoire (EF Core InMemory)
@@ -24,7 +24,6 @@ Une interface HTML/JavaScript est également fournie pour consommer facilement l’
 - Entity Framework Core (InMemory)
 - JWT (Json Web Token)
 - Swagger / Swashbuckle
-- Chart.js
 - HTML, JavaScript 
 
 ---
