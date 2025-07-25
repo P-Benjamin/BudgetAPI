@@ -1,24 +1,24 @@
 # BudgetAPI
 
-BudgetAPI est une API RESTful développée en ASP.NET Core, qui permet de gérer des revenus (`Incomes`) et des dépenses (`Outcomes`) avec une authentification sécurisée via JWT.  
-Une interface HTML/JavaScript est également fournie pour consommer facilement l’API.
+BudgetAPI est une API RESTful dÃ©veloppÃ©e en ASP.NET Core, qui permet de gÃ©rer des revenus (`Incomes`) et des dÃ©penses (`Outcomes`) avec une authentification sÃ©curisÃ©e via JWT.  
+Une interface HTML/JavaScript est Ã©galement fournie pour consommer facilement lâ€™API.
 
 ---
 
-## Fonctionnalités
+## FonctionnalitÃ©s
 
-- Authentification JWT sécurisée
+- Authentification JWT sÃ©curisÃ©e
 - Gestion des utilisateurs avec DTO 
-- Création, modification, suppression de revenus et dépenses
-- Calculs de totaux : global, par mois, par année, par période
+- CrÃ©ation, modification, suppression de revenus et dÃ©penses
+- Calculs de totaux : global, par mois, par annÃ©e, par pÃ©riode
 - Interface web simple (HTML/JS)
-- Swagger intégré pour explorer l’API
-- Validation de tous les modèles avec `[Required]`, `[Range]`, etc.
-- Base de données en mémoire (EF Core InMemory)
+- Swagger intÃ©grÃ© pour explorer lâ€™API
+- Validation de tous les modÃ¨les avec `[Required]`, `[Range]`, etc.
+- Base de donnÃ©es en mÃ©moire (EF Core InMemory)
 
 ---
 
-## Technologies utilisées
+## Technologies utilisÃ©es
 
 - ASP.NET Core Web API
 - Entity Framework Core (InMemory)
@@ -28,7 +28,7 @@ Une interface HTML/JavaScript est également fournie pour consommer facilement l’
 
 ---
 
-## Installation et exécution
+## Installation et exÃ©cution
 
 1. Cloner le projet :
 
@@ -37,18 +37,22 @@ git clone https://github.com/P-Benjamin/BudgetAPI.git
 cd BudgetAPI
 ```
 
-2. Accéder à l’application :
+2. AccÃ©der Ã  lâ€™application :
 
 Interface Swagger : https://localhost:7058/swagger
 
 Interface HTML : https://localhost:7058/index.html
+
+Identifiants : 
+ - Username : admin
+ - Password : admin123
 
 ## API Endpoints
 
 ### Authentification
 
 `POST /api/Login`  
-Authentifie un utilisateur et génère un jeton JWT.
+Authentifie un utilisateur et gÃ©nÃ¨re un jeton JWT.
 
 ---
 
@@ -58,13 +62,13 @@ Authentifie un utilisateur et génère un jeton JWT.
 Liste toutes les sources disponibles.
 
 `GET /api/sources/{id}` 
-Récupère une source spécifique.
+RÃ©cupÃ¨re une source spÃ©cifique.
 
 `POST /api/sources`
-Crée une nouvelle source.
+CrÃ©e une nouvelle source.
 
 `PUT /api/sources/{id}`
-Met à jour une source existante.
+Met Ã  jour une source existante.
 
 `DELETE /api/sources/{id}`
 Supprime une source.
@@ -74,16 +78,16 @@ Supprime une source.
 ### Incomes
 
 `GET /api/Incomes`  
-Récupère la liste de tous les revenus.
+RÃ©cupÃ¨re la liste de tous les revenus.
 
 `POST /api/Incomes`  
-Crée un nouveau revenu.
+CrÃ©e un nouveau revenu.
 
 `GET /api/Incomes/{id}`  
-Récupère un revenu spécifique selon son ID.
+RÃ©cupÃ¨re un revenu spÃ©cifique selon son ID.
 
 `PUT /api/Incomes/{id}`  
-Met à jour un revenu existant.
+Met Ã  jour un revenu existant.
 
 `DELETE /api/Incomes/{id}`  
 Supprime un revenu existant.
@@ -92,50 +96,50 @@ Supprime un revenu existant.
 Calcule le revenu total.
 
 `GET /api/Incomes/total/month/{year}/{month}`  
-Calcule le revenu total pour un mois et une année donnés.
+Calcule le revenu total pour un mois et une annÃ©e donnÃ©s.
 
 `GET /api/Incomes/total/year/{year}`  
-Calcule le revenu total pour une année donnée.
+Calcule le revenu total pour une annÃ©e donnÃ©e.
 
 `POST /api/Incomes/total/range`  
-Calcule le revenu total sur une plage de dates donnée.
+Calcule le revenu total sur une plage de dates donnÃ©e.
 
 `GET /api/incomes/by-source/{sourceId}`
-Liste tous les revenus d’une source spécifique.
+Liste tous les revenus dâ€™une source spÃ©cifique.
 
 ---
 
 ### Outcomes 
 
 `GET /api/Outcomes`  
-Récupère la liste de toutes les dépenses.
+RÃ©cupÃ¨re la liste de toutes les dÃ©penses.
 
 `POST /api/Outcomes`  
-Crée une nouvelle dépense.
+CrÃ©e une nouvelle dÃ©pense.
 
 `GET /api/Outcomes/{id}`  
-Récupère une dépense spécifique par ID.
+RÃ©cupÃ¨re une dÃ©pense spÃ©cifique par ID.
 
 `PUT /api/Outcomes/{id}`  
-Modifie une dépense existante.
+Modifie une dÃ©pense existante.
 
 `DELETE /api/Outcomes/{id}`  
-Supprime une dépense existante.
+Supprime une dÃ©pense existante.
 
 `GET /api/Outcomes/total`  
-Calcule le total de toutes les dépenses.
+Calcule le total de toutes les dÃ©penses.
 
 `GET /api/Outcomes/total/month/{year}/{month}`  
-Calcule les dépenses totales pour un mois et une année donnés.
+Calcule les dÃ©penses totales pour un mois et une annÃ©e donnÃ©s.
 
 `GET /api/Outcomes/total/year/{year}`  
-Calcule les dépenses totales pour une année donnée.
+Calcule les dÃ©penses totales pour une annÃ©e donnÃ©e.
 
 `POST /api/Outcomes/total/range`  
-Calcule les dépenses totales sur une plage de dates.
+Calcule les dÃ©penses totales sur une plage de dates.
 
 `GET /api/outcomes/by-source/{sourceId}`
-Liste toutes les dépenses d’une source spécifique.
+Liste toutes les dÃ©penses dâ€™une source spÃ©cifique.
 
 
 ---
@@ -143,16 +147,16 @@ Liste toutes les dépenses d’une source spécifique.
 ### Users 
 
 `GET /api/Users`  
-Récupère la liste de tous les utilisateurs.
+RÃ©cupÃ¨re la liste de tous les utilisateurs.
 
 `POST /api/Users`  
-Crée un nouvel utilisateur.
+CrÃ©e un nouvel utilisateur.
 
 `GET /api/Users/{id}`  
-Récupère un utilisateur spécifique par ID.
+RÃ©cupÃ¨re un utilisateur spÃ©cifique par ID.
 
 `PUT /api/Users/{id}`  
-Met à jour un utilisateur existant.
+Met Ã  jour un utilisateur existant.
 
 `DELETE /api/Users/{id}`  
 Supprime un utilisateur existant par ID.
@@ -160,4 +164,4 @@ Supprime un utilisateur existant par ID.
 ---
 
 ## Auteurs
-PINOSA Benjamin et SUSINI Mégane
+PINOSA Benjamin et SUSINI MÃ©gane
