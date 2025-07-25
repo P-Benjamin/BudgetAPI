@@ -8,9 +8,10 @@ Une interface HTML/JavaScript est également fournie pour consommer facilement l
 ## Fonctionnalités
 
 - Authentification JWT sécurisée
-- Gestion des utilisateurs avec DTO 
+- Gestion des utilisateurs
 - Création, modification, suppression de revenus et dépenses
-- Calculs de totaux : global, par mois, par année, par période
+- Gestion des sources de revenu et dépenses
+- Calculs de totaux : global, par mois, par année, par période, par sources
 - Interface web simple (HTML/JS)
 - Swagger intégré pour explorer l’API
 - Validation de tous les modèles avec `[Required]`, `[Range]`, etc.
