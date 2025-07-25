@@ -6,6 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+    /// <summary>
+    /// Contrôleur pour la gestion des revenus.
+    /// Fournit des opérations CRUD, des calculs de totaux, et des filtres par période ou par source.
+    /// Requiert une authentification JWT.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -323,8 +328,10 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Vérifie si un revenu existe.
+        /// Vérifie si un revenu avec l'ID spécifié existe dans la base.
         /// </summary>
+        /// <param name="id">ID du revenu</param>
+        /// <returns><c>true</c> si le revenu existe, sinon <c>false</c>.</returns>
         private bool IncomeExists(int id)
         {
             return _context.Income.Any(e => e.Id == id);

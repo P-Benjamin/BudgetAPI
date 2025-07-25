@@ -62,7 +62,7 @@ builder.Services.AddSwaggerGen(options =>
         TermsOfService = new Uri("https://google.com"),
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "",
+            Name = "SUSINI Megane - PINOSA Benjamin",
             Email = "",
             Url = new Uri("https://google.com")
         }

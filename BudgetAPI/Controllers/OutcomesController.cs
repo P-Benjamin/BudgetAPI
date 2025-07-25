@@ -6,6 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+    /// <summary>
+    /// Contrôleur pour la gestion des dépenses (Outcomes).
+    /// Permet les opérations CRUD, le calcul de totaux par période ou par source.
+    /// Requiert une authentification JWT.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -311,6 +316,11 @@ namespace BudgetAPI.Controllers
             return Ok(outcomes);
         }
 
+        /// <summary>
+        /// Vérifie si une dépense existe dans la base de données.
+        /// </summary>
+        /// <param name="id">ID de la dépense</param>
+        /// <returns><c>true</c> si la dépense existe, sinon <c>false</c></returns>
         private bool OutcomeExists(int id)
         {
             return _context.Outcome.Any(e => e.Id == id);

@@ -9,13 +9,21 @@ using System.Text;
 
 namespace BudgetAPI.Controllers
 {
+    /// <summary>
+    /// Contrôleur responsable de l'authentification des utilisateurs et de la génération des jetons JWT.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private readonly AccountContext _context;
 
+        /// <summary>
+        /// Constructeur du contrôleur de connexion.
+        /// </summary>
+        /// <param name="configuration">Configuration de l'application (accès aux clés JWT)</param>
+        /// <param name="context">Contexte de base de données</param>
         public LoginController(IConfiguration configuration, AccountContext context)
         {
             _configuration = configuration;
@@ -30,7 +38,9 @@ namespace BudgetAPI.Controllers
         /// <response code="200">Connexion réussie, jeton JWT retourné</response>
         /// <response code="401">Identifiants invalides</response>
         [HttpPost]
-        public IActionResult Login(UserLogin userLogin)
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult Login([FromBody] UserLogin userLogin)
         {
             var isOk = Authenticate(userLogin);
 
@@ -39,10 +49,8 @@ namespace BudgetAPI.Controllers
                 string token = Generate(userLogin);
                 return Ok(token);
             }
-            else
-            {
-                return Unauthorized("Bad credentials");
-            }
+
+            return Unauthorized("Bad credentials");
         }
 
         /// <summary>
@@ -60,7 +68,7 @@ namespace BudgetAPI.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userLogin.UserName),
-                new Claim("Coucou", "value") // Peut être remplacé par un rôle ou autre
+                new Claim("Coucou", "value") // Peut être modifié selon le besoin (rôle, ID, etc.)
             };
 
             var token = new JwtSecurityToken(
@@ -73,15 +81,15 @@ namespace BudgetAPI.Controllers
         }
 
         /// <summary>
-        /// Vérifie les identifiants de connexion fournis.
+        /// Vérifie si les identifiants utilisateur sont valides.
         /// </summary>
-        /// <param name="userLogin">Objet contenant les identifiants</param>
-        /// <returns>Vrai si les identifiants sont valides, sinon faux</returns>
+        /// <param name="userLogin">Identifiants fournis par le client</param>
+        /// <returns><c>true</c> si l'utilisateur existe avec les bons identifiants, sinon <c>false</c></returns>
         private bool Authenticate(UserLogin userLogin)
         {
             var user = _context.User.FirstOrDefault(u =>
                 u.Username.ToLower() == userLogin.UserName.ToLower()
-                && u.Password == userLogin.Password); // ⚠️ À ne pas faire en production (mot de passe en clair)
+                && u.Password == userLogin.Password); 
 
             return user != null;
         }

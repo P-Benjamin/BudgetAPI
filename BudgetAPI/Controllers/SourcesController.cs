@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BudgetAPI.Controllers
 {
+    /// <summary>
+    /// Contrôleur pour la gestion des sources de revenus ou de dépenses.
+    /// Permet de lister, créer, modifier et supprimer des sources.
+    /// Requiert une authentification JWT.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -29,7 +34,7 @@ namespace BudgetAPI.Controllers
         /// Exemple : GET /api/sources
         /// </remarks>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Source>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<Source>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<Source>>> GetSource()
         {
             return await _context.Source.ToListAsync();
@@ -39,12 +44,10 @@ namespace BudgetAPI.Controllers
         /// Récupère une source par son identifiant.
         /// </summary>
         /// <param name="id">ID de la source</param>
-        /// <remarks>
-        /// Exemple : GET /api/sources/5
-        /// </remarks>
+        /// <remarks>Exemple : GET /api/sources/5</remarks>
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(Source), 200)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(typeof(Source), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Source>> GetSource(int id)
         {
             var source = await _context.Source.FindAsync(id);
@@ -63,17 +66,18 @@ namespace BudgetAPI.Controllers
         /// <param name="id">ID de la source</param>
         /// <param name="source">Objet source à mettre à jour</param>
         /// <remarks>
-        /// Exemple :
-        /// PUT /api/sources/3
-        /// {
-        ///   "id": 3,
-        ///   "name": "Investissements"
-        /// }
+        /// Exemple :
+        ///
+        ///     PUT /api/sources/3
+        ///     {
+        ///         "id": 3,
+        ///         "name": "Investissements"
+        ///     }
         /// </remarks>
         [HttpPut("{id}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutSource(int id, Source source)
         {
             if (id != source.Id)
@@ -107,15 +111,16 @@ namespace BudgetAPI.Controllers
         /// </summary>
         /// <param name="source">Objet source à créer</param>
         /// <remarks>
-        /// Exemple :
-        /// POST /api/sources
-        /// {
-        ///   "name": "Freelance"
-        /// }
+        /// Exemple :
+        ///
+        ///     POST /api/sources
+        ///     {
+        ///         "name": "Freelance"
+        ///     }
         /// </remarks>
         [HttpPost]
-        [ProducesResponseType(typeof(Source), 201)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(typeof(Source), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Source>> PostSource(Source source)
         {
             _context.Source.Add(source);
@@ -133,9 +138,9 @@ namespace BudgetAPI.Controllers
         /// Renvoie 400 si la source est liée à des revenus ou dépenses.
         /// </remarks>
         [HttpDelete("{id}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteSource(int id)
         {
             var source = await _context.Source.FindAsync(id);
@@ -145,7 +150,7 @@ namespace BudgetAPI.Controllers
             }
 
             bool isUsed = await _context.Income.AnyAsync(i => i.SourceId == id)
-                           || await _context.Outcome.AnyAsync(o => o.SourceId == id);
+                       || await _context.Outcome.AnyAsync(o => o.SourceId == id);
 
             if (isUsed)
             {
@@ -158,6 +163,11 @@ namespace BudgetAPI.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Vérifie si une source existe.
+        /// </summary>
+        /// <param name="id">ID de la source</param>
+        /// <returns><c>true</c> si la source existe, sinon <c>false</c></returns>
         private bool SourceExists(int id)
         {
             return _context.Source.Any(e => e.Id == id);
